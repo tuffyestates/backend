@@ -1,6 +1,12 @@
-stages:
-  - deploy
+cache:
+  paths:
+    - node_modules/
 
 deployment:
-  stage: deply
-  script: "npm start"
+  stage: deploy
+  environment: Staging
+  only:
+    - master
+  script:
+    - rm ./package-lock.json
+    - npm install
