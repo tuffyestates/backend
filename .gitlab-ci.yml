@@ -1,12 +1,25 @@
+stages:
+  - setup
+  - test
+  - deploy
+
 cache:
   paths:
     - node_modules/
 
+install:
+  stage: setup
+  script: npm install
+
+testing:
+  stage: test
+  script: npm test
+
 deployment:
   stage: deploy
-  environment: Staging
+  environment:
+    name: staging
+    url: http://direct.sparling.us:11638
   only:
     - master
-  script:
-    - rm ./package-lock.json
-    - npm install
+  script: npm start
