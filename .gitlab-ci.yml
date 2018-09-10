@@ -1,0 +1,6 @@
+stages:
+  - deploy
+
+deployment:
+  stage: deply
+  script: "npm start"
