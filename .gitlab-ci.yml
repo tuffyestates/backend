@@ -20,6 +20,18 @@ deployment:
   environment:
     name: staging
     url: http://direct.sparling.us:11638
+    on_stop: stop_deployment
   only:
     - master
   script: npm start
+
+stop_deployment:
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - npm stop
+  when: manual
+  environment:
+    name: staging
+    action: stop
