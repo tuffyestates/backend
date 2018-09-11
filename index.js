@@ -1,3 +1,5 @@
+process.title = `tuffy_estates_backend`;
+
 const http = require('http');
 
 // Create an HTTP server
