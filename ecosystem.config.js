@@ -1,12 +1,9 @@
+
+const name = `backend-${process.env.CI_ENVIRONMENT_NAME || ''}`;
+
 module.exports = {
-  apps : [{
-    name      : 'backend',
-    script    : 'index.js',
-    env: {
-      NODE_ENV: 'development'
-    },
-    env_production : {
-      NODE_ENV: 'production'
-    }
-  }],
+    apps: [{
+        name,
+        script: 'index.js',
+    }],
 };
