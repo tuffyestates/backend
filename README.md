@@ -5,12 +5,15 @@
 Master is a protected branch, you can only merge into it.
 
 ## Developing
+
 ```
 git clone git@gitlab.com:tuffyestates/backend.git -b develop
 cd develop
 npm start
 ```
 You will now be able to access the server on [localhost:11638](http://localhost:11638).
+
+See https://gitlab.com/tuffyestates/backend/wikis/Development for more information on working on the live environments.
 
 ## Launching staging environment
 ```

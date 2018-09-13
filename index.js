@@ -10,4 +10,5 @@ const srv = http.createServer((req, res) => {
   console.log(`got client`, req.headers);
   res.end('okay');
 });
-srv.listen(port);
+
+srv.listen(PORT);
