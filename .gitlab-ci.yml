@@ -15,17 +15,25 @@ testing:
   stage: test
   script: npm test
 
-deployment:
+deployment_staging:
   stage: deploy
   environment:
     name: staging
-    url: http://direct.sparling.us:11638
-    on_stop: stop_deployment
+    on_stop: stop_deployment_staging
   only:
     - master
   script: npm start
 
-stop_deployment:
+deployment_develop:
+  stage: deploy
+  environment:
+    name: develop
+    on_stop: stop_deployment_develop
+  only:
+    - develop
+  script: npm start
+
+stop_deployment_staging:
   stage: deploy
   variables:
     GIT_STRATEGY: none
@@ -34,4 +42,15 @@ stop_deployment:
   when: manual
   environment:
     name: staging
+    action: stop
+
+stop_deployment_develop:
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - npm stop
+  when: manual
+  environment:
+    name: develop
     action: stop

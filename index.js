@@ -1,5 +1,7 @@
 process.title = `tuffy_estates_backend`;
 
+const PORT = process.env.CI_ENVIRONMENT_NAME === 'develop' ? 11637 : 11638;
+
 const http = require('http');
 
 // Create an HTTP server
@@ -8,4 +10,4 @@ const srv = http.createServer((req, res) => {
   console.log(`got client`, req.headers);
   res.end('okay');
 });
-srv.listen(11638);
+srv.listen(port);
