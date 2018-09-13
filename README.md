@@ -9,7 +9,7 @@ Master is a protected branch, you can only merge into it.
 ```
 git clone git@gitlab.com:tuffyestates/backend.git -b develop
 cd develop
-npm start
+npm run dev
 ```
 You will now be able to access the server on [localhost:11638](http://localhost:11638).
 
