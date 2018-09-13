@@ -26,6 +26,8 @@ deployment_staging:
 
 deployment_develop:
   stage: deploy
+  variables:
+    TE_PORT: '11637'
   environment:
     name: develop
     on_stop: stop_deployment_develop
@@ -43,6 +45,8 @@ stop_deployment_staging:
   environment:
     name: staging
     action: stop
+  only:
+    - master
 
 stop_deployment_develop:
   stage: deploy
@@ -54,3 +58,5 @@ stop_deployment_develop:
   environment:
     name: develop
     action: stop
+  only:
+    - develop

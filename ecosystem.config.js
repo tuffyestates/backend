@@ -1,5 +1,5 @@
 
-const name = `backend-${process.env.CI_ENVIRONMENT_NAME || ''}`;
+const name = `backend-${process.env.CI_ENVIRONMENT_NAME || 'production'}`;
 
 module.exports = {
     apps: [{
