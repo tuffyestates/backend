@@ -17,8 +17,11 @@ testing:
 
 deployment_staging:
   stage: deploy
+  variables:
+    TE_MONGODB_URL: 'mongodb://localhost:27017/tuffyestates_master'
   environment:
     name: staging
+    url: http://direct.sparling.us:11638
     on_stop: stop_deployment_staging
   only:
     - master
@@ -28,8 +31,10 @@ deployment_develop:
   stage: deploy
   variables:
     TE_PORT: '11637'
+    TE_MONGODB_URL: 'mongodb://localhost:27017/tuffyestates_develop'
   environment:
     name: develop
+    url: http://direct.sparling.us:11637
     on_stop: stop_deployment_develop
   only:
     - develop
