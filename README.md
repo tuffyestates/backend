@@ -5,8 +5,8 @@
 Master is a protected branch, you can only merge into it.
 
 ## Live Builds (Demos)
-[Stable](http://direct.sparling.us:11638)
-[Nightly](http://direct.sparling.us:11637)
+[Stable](http://tuffyestates.sparling.us:11638)
+[Nightly](http://tuffyestates.sparling.us:11637)
 
 ## Wiki
 https://gitlab.com/tuffyestates/backend/wikis/home
@@ -33,4 +33,4 @@ Once the push is complete a pipeline will start and update the [develop environm
 
 ## Merging changes into master
 
-File a [new merge request](https://gitlab.com/tuffyestates/backend/merge_requests/new) from the `develop` branch into the `master` branch. Once the branch is merged a [CI pipeline](https://gitlab.com/tuffyestates/backend/pipelines) will be started. Once it completes the deployment stage the server will be accessable with the latest build at [direct.sparling.us:11638](http://direct.sparling.us:11638). You can check the status of the environment at [environments](https://gitlab.com/tuffyestates/backend/environments).
+File a [new merge request](https://gitlab.com/tuffyestates/backend/merge_requests/new) from the `develop` branch into the `master` branch. Once the branch is merged a [CI pipeline](https://gitlab.com/tuffyestates/backend/pipelines) will be started. Once it completes the deployment stage the server will be accessable with the latest build at [tuffyestates.sparling.us:11638](http://tuffyestates.sparling.us:11638). You can check the status of the environment at [environments](https://gitlab.com/tuffyestates/backend/environments).
