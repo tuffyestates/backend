@@ -1,3 +1,6 @@
+const https = require('https');
+const fs = require('fs');
+
 const express = require('express');
 const ajv = new require('ajv')();
 const multer = require('multer');
@@ -47,7 +50,7 @@ function parametersValidator(schema) {
 module.exports = function initWeb(database) {
 
     // Create express app and create api path handler
-    const app = express();
+    let app = express();
 
     // Middleware to log all requests to the Logger
     app.use(function initialHandler(req, res, next) {
@@ -104,6 +107,14 @@ module.exports = function initWeb(database) {
 
     // Handle sending errors to clients
     api.use(errorHandler);
+
+    if (process.env.TE_SSL_CERT_PATH && process.env.TE_SSL_KEY_PATH) {
+        Logger.info("Using SSL!");
+        app = https.createServer({
+            cert: fs.readFileSync(process.env.TE_SSL_CERT_PATH),
+            key: fs.readFileSync(process.env.TE_SSL_KEY_PATH)
+        }, app);
+    }
 
     return app;
 };
