@@ -86,7 +86,7 @@ module.exports = function initWeb(database) {
     api.post('/user', asyncHandler(async function register(req, res) {
 
         // Create a database User from the data provided
-        let user = new database.models.user(req.body);
+        let user = new database.models.User(req.body);
 
         // Save the user to the database
         await user.save();

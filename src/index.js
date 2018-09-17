@@ -21,6 +21,7 @@ const DATABASE_URL = process.env.TE_MONGODB_URL || "mongodb://localhost:27017/tu
         app.listen(PORT, () => Logger.info(`Server listening on ${PORT}!`));
     } catch (e) {
         Logger.error("Error initializing server\n", e);
+        process.exit(1);
     }
 
 })();

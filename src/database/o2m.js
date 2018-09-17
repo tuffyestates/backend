@@ -7,7 +7,7 @@ function openSchema2Mongoose(oas) {
 
 module.exports = function(spec) {
     let output = {};
-    for (const [name, schema] of Object.entries(spec.components.schema)) {
+    for (const [name, schema] of Object.entries(spec.components.schemas)) {
         output[name] = new mongoose.Schema(openSchema2Mongoose(schema));
     }
     return output;
