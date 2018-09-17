@@ -23,7 +23,7 @@ deployment_staging:
     TE_MONGODB_URL: 'mongodb://localhost:27017/tuffyestates_master'
   environment:
     name: staging
-    url: http://tuffyestates.sparling.us:11638
+    url: https://tuffyestates.sparling.us:11638
     on_stop: stop_deployment_staging
   only:
     - master
@@ -38,7 +38,7 @@ deployment_develop:
     TE_MONGODB_URL: 'mongodb://localhost:27017/tuffyestates_develop'
   environment:
     name: develop
-    url: http://tuffyestates.sparling.us:11637
+    url: https://tuffyestates.sparling.us:11637
     on_stop: stop_deployment_develop
   only:
     - develop
