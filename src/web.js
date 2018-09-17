@@ -54,7 +54,7 @@ module.exports = function initWeb(database) {
         res.header("Access-Control-Allow-Origin", "*");
 
         // Need this to use swagger examples
-        res.header("Access-Control-Allow-Headers", "content-type");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 
         // Some trace logging for every incomming request
         Logger.trace("Incomming request:", req.method, req.url, req.path);
