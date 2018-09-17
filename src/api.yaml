@@ -9,41 +9,80 @@ servers:
     description: Staging Server
   - url: https://tuffyestates.sparling.us:11637/api
     description: Development Server
+tags:
+  - name: user
+    description: "Everything about users"
 paths:
   /user:
     post:
-      summary: Registers a user.
+      tags:
+        - user
+      summary: Registers a user
+      operationId: "registerUser"
+      produces:
+      - "application/json"
       requestBody:
         required: true
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/user/post'
-          application/json:
-            schema:
-              $ref: '#/components/user/post'
+              $ref: '#/components/schemas/user'
       responses:
-        '200':
+        200:
           description: User registered
+  /user/login:
+    get:
+      tags:
+        - user
+      summary: Authenticate a user
+      operationId: "loginUser"
+      produces:
+      - "application/json"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+               - username
+               - password
+      responses:
+        200:
+          description: User logged in
+  /user/logout:
+    get:
+      tags:
+        - user
+      summary: Deauthenticate a user
+      operationId: "logoutUser"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: User logged out
 
 components:
   securitySchemes:
     BearerAuth:
-    type: http
-    scheme: bearer
-  user:
-    post:
-      type: object
-      properties:
-        username:
-          type: string
-        password:
-          type: string
-      required:
-       - username
-       - password
+      type: http
+      scheme: bearer
+  schemas:
+      user:
+        type: object
+        properties:
+          username:
+            type: string
+          password:
+            type: string
+        required:
+         - username
+         - password
 
 security:
-  - BearerAuth:
-      - user
-      - admin
+  - BearerAuth: []

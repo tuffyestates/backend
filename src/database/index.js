@@ -1,5 +1,11 @@
+const fs = require('fs');
+const path = require('path');
+
+const jsYaml = require("js-yaml");
 const mongoose = require('mongoose');
+
 const Logger = require('../logger');
+const o2m = require('./o2m.js');
 
 module.exports = async function initDatabase(url) {
     await mongoose.connect(url, {
@@ -7,8 +13,10 @@ module.exports = async function initDatabase(url) {
     });
     Logger.info(`Connected to database at "${url}".`);
 
-    for (const [name, schema] of Object.entries(require('./schemas'))) {
-        mongoose.model(name, new mongoose.Schema(schema));
+    const openApiDocument = jsYaml.safeLoad(fs.readFileSync(path.join(__dirname, '../api.yaml'), "utf-8"));
+
+    for (const [name, schema] of Object.entries(o2m(openApiDocument))) {
+        mongoose.model(name, schema);
     }
 
     return mongoose;
