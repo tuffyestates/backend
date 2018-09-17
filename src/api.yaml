@@ -1,0 +1,49 @@
+openapi: 3.0.0
+info:
+  title: Tuffy Estates
+  version: 0.1.0
+servers:
+  - url: http://localhost:11638/api
+    description: Local Development Server
+  - url: https://tuffyestates.sparling.us:11638/api
+    description: Staging Server
+  - url: https://tuffyestates.sparling.us:11637/api
+    description: Development Server
+paths:
+  /user:
+    post:
+      summary: Registers a user.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/user/post'
+          application/json:
+            schema:
+              $ref: '#/components/user/post'
+      responses:
+        '200':
+          description: User registered
+
+components:
+  securitySchemes:
+    BearerAuth:
+    type: http
+    scheme: bearer
+  user:
+    post:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+       - username
+       - password
+
+security:
+  - BearerAuth:
+      - user
+      - admin

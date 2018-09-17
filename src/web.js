@@ -1,13 +1,21 @@
 const https = require('https');
 const fs = require('fs');
+const path = require('path');
 
 const express = require('express');
-const ajv = new require('ajv')();
 const multer = require('multer');
 const formProcessor = multer();
+const {
+    OpenApiValidator
+} = require("express-openapi-validate");
+const jsYaml = require("js-yaml");
 
 // Require global logger
 const Logger = require('./logger');
+
+// Read OpenAPI specification and create request validator
+const openApiDocument = jsYaml.safeLoad(fs.readFileSync(path.join(__dirname, 'api.yaml'), "utf-8"));
+const validator = new OpenApiValidator(openApiDocument);
 
 // This handles sending out error messages to the client
 // when there is an async error
@@ -17,32 +25,18 @@ const asyncHandler = fn =>
         return Promise.resolve(fnReturn).catch(next);
     };
 
-// If an error is caught while processing a request we will
-// send a 500 (Internal Error) status code and error message
-// ** This should only handle unexpected errors **
+// If an error is caught while processing a request we will notify the user
 function errorHandler(err, req, res, next) {
-    Logger.error(err);
-    res.status(500).send({
+    const status = err.statusCode || 500;
+
+    // 500 (Internal Server Error) represents an error that shouldn't happen
+    if (status === 500) {
+        Logger.error(err);
+    }
+    res.status(status).send({
         error: err.toString()
     });
     next();
-}
-
-// Validate Json schemas before they are passed to the
-// actual processing function.
-// If data is invalid send a 400 (Bad Request) response
-// with the validation error.
-function parametersValidator(schema) {
-    const validate = ajv.compile(schema);
-    return function inputValidator(req, res, next) {
-        if (!validate(req.body)) {
-            const error = validate.errors[0];
-            Logger.debug(`Invalid request parameters: ${error.schemaPath}: ${error.message}`);
-            res.status(400).send({
-                error: `${error.dataPath || error.params.additionalProperty}: ${error.message}`
-            });
-        } else next();
-    }
 }
 
 // Setup API Router ------------------------------------------------------------
@@ -54,8 +48,13 @@ module.exports = function initWeb(database) {
 
     // Middleware to log all requests to the Logger
     app.use(function initialHandler(req, res, next) {
+
         // Allow requests from any domain
+        // TODO: This shouldn't be * (unsecure)
         res.header("Access-Control-Allow-Origin", "*");
+
+        // Need this to use swagger examples
+        res.header("Access-Control-Allow-Headers", "content-type");
 
         // Some trace logging for every incomming request
         Logger.trace("Incomming request:", req.method, req.url, req.path);
@@ -67,32 +66,24 @@ module.exports = function initWeb(database) {
     const api = express.Router();
     app.use('/api', api);
 
+
+    // Serve the api specification file on /api
+    api.get('/', (req, res) => res.sendFile(path.join(__dirname, 'api.yaml')));
+
+    api.use(formProcessor.none());
+
     // Try to parse incoming requests to json if they are ['Content-Type': 'application/json']
     api.use(express.json());
+
+    api.use((...args) => validator.validate(args[0].method.toLowerCase(), args[0].path).apply(this, args));
 
     // api.all('/api/*', requireAuthentication);
 
 
-    // - formProcessor turns formdata into json (the .none() says not to accept any file attachments)
-    //      - See https://github.com/expressjs/multer
-    // - parametersValidator is a Json validator for the fields sent in the formdata
-    //      - See https://github.com/epoberezkin/ajv#getting-started
+
     // - asyncHandler allows us to use an async function to handle requests
     // Handle user registration
-    api.post('/register', formProcessor.none(), parametersValidator({
-        "properties": {
-            "username": {
-                "type": "string",
-                "minLength": 3
-            },
-            "password": {
-                "type": "string",
-                "minLength": 3
-            }
-        },
-        "required": ["username", "password"],
-        "additionalProperties": false
-    }), asyncHandler(async function register(req, res, next) {
+    api.post('/user', asyncHandler(async function register(req, res) {
 
         // Create a database User from the data provided
         let user = new database.models.User(req.body);
@@ -102,11 +93,12 @@ module.exports = function initWeb(database) {
 
         Logger.debug(`User registered:`, req.body.username);
 
-        res.send({});
+        res.json({});
     }));
 
     // Handle sending errors to clients
     api.use(errorHandler);
+
 
     if (process.env.TE_SSL_CERT_PATH && process.env.TE_SSL_KEY_PATH) {
         Logger.info("Using SSL!");
