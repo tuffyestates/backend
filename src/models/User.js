@@ -3,15 +3,15 @@ const Schema = mongooe.Schema;
 
 // Create User Schema
 const UserSchema = new Schema({
-  name: {
+  title: {
     type: String, 
     require: true  
   },
-  email: {
+  price: {
     type: String,
     required: true
   },
-  password: {
+  user: {
     type: String,
     required: true
   },
