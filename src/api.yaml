@@ -1,105 +1,142 @@
-openapi: 3.0.0
+openapi:                       3.0.0
 info:
-  title: Tuffy Estates
-  version: 0.1.0
+  title:                       Tuffy Estates
+  version:                     0.1.0
 servers:
-  - url: http://localhost:11638/api
-    description: Local Development Server
-  - url: https://tuffyestates.sparling.us:11638/api
-    description: Staging Server
-  - url: https://tuffyestates.sparling.us:11637/api
-    description: Development Server
+  - url:                       http://localhost:11638/api
+    description:               Local Development Server
+  - url:                       https://tuffyestates.sparling.us:11638/api
+    description:               Staging Server
+  - url:                       https://tuffyestates.sparling.us:11637/api
+    description:               Development Server
 tags:
-  - name: user
-    description: "Everything about users"
+  - name:                      users
+    description:               "Everything about users"
 paths:
-  /user:
+  /users:
     post:
-      tags:
-        - user
-      summary: Registers a user
-      operationId: "registerUser"
+      tags:                    [users]
+      summary:                 Registers a user
+      operationId:             registerUser
       requestBody:
-        required: true
+        required:              true
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref:            '#/components/schemas/User'
       responses:
-        200:
-          description: User registered
+        201:
+          description:         User registered
         400:
-          description: Bad request
+          description:         Bad request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /user/login:
+                $ref:          '#/components/schemas/Error'
+  /users/login:
     get:
-      tags:
-        - user
-      summary: Authenticate a user
-      operationId: "loginUser"
+      tags:                    [users]
+      summary:                 Authenticate a user
+      operationId:             loginUser
       parameters:
-        - name: username
-          in: query
-          required: true
-          description: Username used to authenticate the user
+        - name:                username
+          in:                  query
+          required:            true
+          description:         Username used to authenticate the user
           schema:
-            type: string
-        - name: password
-          in: query
-          required: true
-          description: Password used to authenticate the user
+            type:              string
+        - name:                password
+          in:                  query
+          required:            true
+          description:         Password used to authenticate the user
           schema:
-            type: string
+            type:              string
       responses:
         200:
-          description: User logged in
+          description:         Session token authenticated
         400:
-          description: Bad request
+          description:         Bad request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  /user/logout:
-    get:
-      tags:
-        - user
-      summary: Deauthenticate a user
-      operationId: "logoutUser"
+                $ref:          '#/components/schemas/Error'
+  /users/logout:
+    head:
+      tags:                    [users]
+      summary:                 Deauthenticate a user
+      operationId:             logoutUser
       responses:
         200:
-          description: User logged out
+          description:         Session token revoked
         400:
-          description: Bad request
+          description:         Bad request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref:          '#/components/schemas/Error'
       security:
-        - BearerAuth: []
+        - BearerAuth:          []
 
 components:
   securitySchemes:
     BearerAuth:
-      type: http
-      scheme: bearer
+      type:                    http
+      scheme:                  bearer
   schemas:
-      User:
-        type: object
-        properties:
-          username:
-            type: string
-            description: Username for the user
-          password:
-            type: string
-            description: Password for the user
-        required:
-         - username
-         - password
-      Error:
-        type: object
-        properties:
-          error:
-            type: string
+    User:
+      type:                    object
+      required:                [username, password]
+      properties:
+        username:
+          type:                string
+          description:         Username for the user
+        password:
+          type:                string
+          description:         Password for the user
+    Message:
+      type:                    object
+      required:                [text, author, recipient]
+      properties:
+        text:
+          type:                string
+          description:         Message contents
+        author:
+          type:                string
+          x-mongoose-type:     ObjectId
+          description:         Id of user that authored the message
+        recipient:
+          type:                string
+          x-mongoose-type:     ObjectId
+          description:         Id of user that received the message
+    Listing:
+      type:                    object
+      required:                [address, details]
+      properties:
+        address:
+          type:                string
+          description:         Listing's physical address
+        details:
+          type:                object
+          description:         More details about a listing
+          required:            [price, size]
+          properties:
+            price:
+              type:            number
+              description:     Price of the listing in USD
+            size:
+              type:            number
+              description:     Size of the listing in squarefeet
+            features:
+              type:            array
+              description:     Features of the listing
+              items:
+                $ref:          '#/components/schemas/Feature'
+    Feature:
+      type:                    string
+      enum:                    [office, garage, fireplace, pool, ecofriendly]
+    Error:
+      type:                    object
+      properties:
+        error:
+          description:         Human readable error message
+          type:                string

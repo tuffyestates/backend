@@ -83,7 +83,7 @@ module.exports = function initWeb(database) {
 
     // - asyncHandler allows us to use an async function to handle requests
     // Handle user registration
-    api.post('/user', asyncHandler(async function register(req, res) {
+    api.post('/users', asyncHandler(async function register(req, res) {
 
         // Create a database User from the data provided
         let user = new database.models.User(req.body);
@@ -93,7 +93,7 @@ module.exports = function initWeb(database) {
 
         Logger.debug(`User registered:`, req.body.username);
 
-        res.send();
+        res.status(201).send();
     }));
 
     // Handle sending errors to clients

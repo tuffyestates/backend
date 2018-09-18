@@ -12,7 +12,7 @@ Master is a protected branch, you can only merge into it.
 https://gitlab.com/tuffyestates/backend/wikis/home
 
 ## Developing
-Ensure you have a MongoDB database running and accepted connections on `localhost:27017`.
+Ensure you have a MongoDB database running and accepting connections on `localhost:27017`.
 
 ```
 git clone git@gitlab.com:tuffyestates/backend.git -b develop

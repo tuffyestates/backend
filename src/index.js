@@ -13,15 +13,22 @@ const DATABASE_URL = process.env.TE_MONGODB_URL || "mongodb://localhost:27017/tu
 // A top level async code block
 (async () => {
 
+    let db, server;
     // Use a try/catch to catch errors
     try {
-        let db = await database(DATABASE_URL);
+        db = await database(DATABASE_URL);
         let app = await web(db);
 
-        app.listen(PORT, () => Logger.info(`Server listening on ${PORT}!`));
+        server = app.listen(PORT, () => Logger.info(`Server listening on`, server.address()));
     } catch (e) {
-        Logger.error("Error initializing server\n", e);
-        process.exit(1);
+        Logger.error("Error initializing server:\n", e);
+        await Logger.flush();
+        if (db) {
+            db.collection.close();
+        }
+        if (server) {
+            server.close();
+        }
     }
 
 })();
