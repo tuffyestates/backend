@@ -20,9 +20,11 @@
   "homepage": "https://gitlab.com/tuffyestates/backend#readme",
   "dependencies": {
     "chalk": "^2.4.1",
+    "cors": "^2.8.4",
     "express": "^4.16.3",
     "express-openapi-validate": "^0.4.3",
     "js-yaml": "^3.12.0",
+    "know-your-http-well": "^0.5.0",
     "mongoose": "^5.2.14",
     "multer": "^1.3.1",
     "nmmes-tracer": "0.0.5",
@@ -30,6 +32,7 @@
   },
   "devDependencies": {
     "eslint": "^5.5.0",
+    "express-jwt": "^5.3.1",
     "nodemon": "^1.18.4"
   }
 }

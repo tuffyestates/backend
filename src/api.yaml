@@ -27,6 +27,14 @@ paths:
       responses:
         201:
           description:         User registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionSecret:
+                    type: string
+                    description: The session secret used to authenticate future requests
         400:
           description:         Bad request
           content:
@@ -55,6 +63,14 @@ paths:
       responses:
         200:
           description:         Session token authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionSecret:
+                    type: string
+                    description: The session secret used to authenticate future requests
         400:
           description:         Bad request
           content:
