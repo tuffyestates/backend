@@ -43,15 +43,15 @@ paths:
         content:
           multipart/form-data:
             schema:
-              type:                    object
-              required:                [username, password]
+              type:            object
+              required:        [username, password]
               properties:
                 username:
-                  type:                string
-                  description:         Username used to authenticate the user
+                  type:        string
+                  description: Username used to authenticate the user
                 password:
-                  type:                string
-                  description:         Password used to authenticate the user
+                  type:        string
+                  description: Password used to authenticate the user
       responses:
         200:
           description:         Session token authenticated
