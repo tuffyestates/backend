@@ -34,23 +34,24 @@ paths:
               schema:
                 $ref:          '#/components/schemas/Error'
   /users/login:
-    get:
+    post:
       tags:                    [users]
       summary:                 Authenticate a user
       operationId:             loginUser
-      parameters:
-        - name:                username
-          in:                  query
-          required:            true
-          description:         Username used to authenticate the user
-          schema:
-            type:              string
-        - name:                password
-          in:                  query
-          required:            true
-          description:         Password used to authenticate the user
-          schema:
-            type:              string
+      requestBody:
+        required:              true
+        content:
+          multipart/form-data:
+            schema:
+              type:                    object
+              required:                [username, password]
+              properties:
+                username:
+                  type:                string
+                  description:         Username used to authenticate the user
+                password:
+                  type:                string
+                  description:         Password used to authenticate the user
       responses:
         200:
           description:         Session token authenticated
