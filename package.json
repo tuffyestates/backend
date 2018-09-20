@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Tuffy Estates backend",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 0",
+    "test": "node test",
     "dev": "nodemon index.js",
     "start": "pm2 startOrGracefulReload ecosystem.config.js",
     "stop": "pm2 stop ecosystem.config.js"
@@ -33,6 +33,7 @@
   "devDependencies": {
     "eslint": "^5.5.0",
     "express-jwt": "^5.3.1",
-    "nodemon": "^1.18.4"
+    "nodemon": "^1.18.4",
+    "swagger-parser": "^5.0.5"
   }
 }
