@@ -96,11 +96,10 @@ paths:
       security:
         - BearerAuth:          []
 
+
+
   # Properties
-tags:
-  - name:                      properties
-    description:               "Everything about properties"
-paths:
+
   /properties:
     post:
       tags:                    [properties]
@@ -181,13 +180,6 @@ paths:
                 $ref:          '#/components/schemas/Error'
       security:
         - BearerAuth:          []
-
-
-
-
-
-
-
 
 
 
