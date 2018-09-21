@@ -149,11 +149,47 @@ module.exports = function initWeb(database) {
         next();
     }));
 
+
     api.head('/users/logout', asyncHandler(async function logout(req, res, next) {
         res.send();
 
         next();
     }));
+
+
+
+    // api.post('/properties', asyncHandler(async function login(req, res, next) {
+      
+    //     let property = new database.models.Listing(req.body);
+
+    //     await user.save();
+    // }));
+
+
+    // api.post('/properties/patch', asyncHandler(async function login(req, res, next) {
+      
+    //     Listing.findByIdAndUpdate(req.params.id, req.body.Listing, function(err, updatedListing){
+    //         if(err){
+    //            // res.redirect();
+    //         } else {
+    //            // res.redirect();
+    //         }
+    //       });
+
+        
+    // }));
+
+
+    // api.get('/properties/:id', asyncHandler(async function login(req, res, next) {
+      
+        
+    // }));
+
+    
+
+
+
+
 
     // Handle sending errors to clients
     api.use(errorHandler);
