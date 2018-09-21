@@ -1,34 +1,43 @@
-openapi:                       3.0.0
+openapi: 3.0.0
 info:
-  title:                       Tuffy Estates
-  version:                     0.1.0
+  title: Tuffy Estates
+  version: 0.1.0
 servers:
-  - url:                       http://localhost:11638/api
-    description:               Local Development Server
-  - url:                       https://tuffyestates.sparling.us:11638/api
-    description:               Staging Server
-  - url:                       https://tuffyestates.sparling.us:11637/api
-    description:               Development Server
-
-# users
+  - url: 'http://localhost:11638/api'
+    description: Local Development Server
+  - url: 'https://tuffyestates.sparling.us:11638/api'
+    description: Staging Server
+  - url: 'https://tuffyestates.sparling.us:11637/api'
+    description: Development Server
 tags:
-  - name:                      users
-    description:               "Everything about users"
+  - name: users
+    description: Everything about users
 paths:
   /users:
     post:
-      tags:                    [users]
-      summary:                 Registers a user
-      operationId:             registerUser
+      tags:
+        - users
+      summary: Registers a user
+      operationId: registerUser
       requestBody:
-        required:              true
+        required: true
         content:
           multipart/form-data:
             schema:
-              $ref:            '#/components/schemas/User'
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  description: Username for the user
+                password:
+                  type: string
+                  description: Password for the user
       responses:
-        201:
-          description:         User registered
+        '201':
+          description: User registered
           content:
             application/json:
               schema:
@@ -37,38 +46,53 @@ paths:
                   sessionSecret:
                     type: string
                     description: The session secret used to authenticate future requests
-        400:
-          description:         Bad request
+        '400':
+          description: Bad request
           content:
             application/json:
               schema:
-                $ref:          '#/components/responses/Error'
-        500:
-          $ref:                '#/components/responses/InternalError'
+                type: object
+                properties:
+                  error:
+                    description: Human readable error message
+                    type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    description: Human readable error message
+                    type: string
   /users/login:
     post:
-      tags:                    [users]
-      summary:                 Authenticate a user
-      operationId:             loginUser
+      tags:
+        - users
+      summary: Authenticate a user
+      operationId: loginUser
       requestBody:
-        required:              true
+        required: true
         content:
           multipart/form-data:
             schema:
-              type:            object
-              required:        [username, password]
+              type: object
+              required:
+                - username
+                - password
               properties:
                 username:
-                  type:        string
+                  type: string
                   description: Username used to authenticate the user
-                  minLength:   3
+                  minLength: 3
                 password:
-                  type:        string
+                  type: string
                   description: Password used to authenticate the user
-                  minLength:   3
+                  minLength: 3
       responses:
-        200:
-          description:         Session token authenticated
+        '200':
+          description: Session token authenticated
           content:
             application/json:
               schema:
@@ -77,194 +101,234 @@ paths:
                   sessionSecret:
                     type: string
                     description: The session secret used to authenticate future requests
-        400:
-          description:         Bad request
+        '400':
+          description: Bad request
           content:
             application/json:
               schema:
-                $ref:          '#/components/responses/Error'
-        500:
-          $ref:                '#/components/responses/InternalError'
+                type: object
+                properties:
+                  error:
+                    description: Human readable error message
+                    type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    description: Human readable error message
+                    type: string
   /users/logout:
     head:
-      tags:                    [users]
-      summary:                 Deauthenticate a user
-      operationId:             logoutUser
+      tags:
+        - users
+      summary: Deauthenticate a user
+      operationId: logoutUser
       responses:
-        200:
-          description:         Session token revoked
-        400:
-          description:         Bad request
-          content:
-            application/json:
-              schema:
-                $ref:          '#/components/responses/Error'
-        500:
-          $ref:                '#/components/responses/InternalError'
-      security:
-        - BearerAuth:          []
-
-
-
-  # Properties
-
-  /properties:
-    post:
-      tags:                    [properties]
-      summary:                 create property
-      operationId:             createProperty
-      requestBody:
-        required:              true
-        content:
-          multipart/form-data:
-            schema:
-              $ref:            '#/components/Listing/properties'
-      responses:
-        201:
-          description:         Create property
+        '200':
+          description: Session token revoked
+        '400':
+          description: Bad request
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  sessionSecret:
+                  error:
+                    description: Human readable error message
                     type: string
-                    description: The session secret used to authenticate future requests
-        400:
-          description:         Bad request
-          content:
-            application/json:
-              schema:
-                $ref:          '#/components/Listing/Error'
-        500:
-          $ref:                '#/components/responses/InternalError'
-  /properties/patch:
-    post:
-      tags:                    [properties]
-      summary:                 update property
-      operationId:             propertyUpdate
-      requestBody:
-        required:              true
-        content:
-          multipart/form-data:
-            schema:
-              type:            object
-              required:        [username, password]
-              properties:
-                username:
-                  type:        string
-                  description: Username used to authenticate the user
-                password:
-                  type:        string
-                  description: Password used to authenticate the user
-      responses:
-        200:
-          description:         Session token authenticated
+        '500':
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  sessionSecret:
+                  error:
+                    description: Human readable error message
                     type: string
-                    description: The session secret used to authenticate future requests
-        400:
-          description:         Bad request
-          content:
-            application/json:
-              schema:
-                $ref:          '#/components/Listing/Error'
-        500:
-          $ref:                '#/components/responses/InternalError'
-  /properties/:id:
-    get:
-      tags:                    [properties]
-      summary:                 Deauthenticate a user
-      operationId:             logoutUser
-      responses:
-        200:
-          description:         Session token revoked
-        400:
-          description:         Bad request
-          content:
-            application/json:
-              schema:
-                $ref:          '#/components/responses/Error'
-        500:
-          $ref:                '#/components/responses/InternalError'
       security:
-        - BearerAuth:          []
+        - BearerAuth: []
 
+ # Properties
+
+ # /properties:
+ #   post:
+ #     tags:                    [properties]
+ #     summary:                 create property
+ #     operationId:             createProperty
+ #     requestBody:
+ #       required:              true
+ #       content:
+ #         multipart/form-data:
+ #           schema:
+ #             $ref:            '#/components/Listing/properties'
+ #     responses:
+ #       201:
+ #         description:         Create property
+ #         content:
+ #           application/json:
+ #             schema:
+ #               type: object
+ #               properties:
+ #                 sessionSecret:
+ #                   type: string
+ #                   description: The session secret used to authenticate future requests
+ #       400:
+ #         description:         Bad request
+ #         content:
+ #           application/json:
+ #             schema:
+ #               $ref:          '#/components/Listing/Error'
+ #       500:
+ #         $ref:                '#/components/responses/InternalError'
+ # /properties/patch:
+ #   post:
+ #     tags:                    [properties]
+ #     summary:                 update property
+ #     operationId:             propertyUpdate
+ #     requestBody:
+ #       required:              true
+ #       content:
+ #         multipart/form-data:
+ #           schema:
+ #             type:            object
+ #             required:        [username, password]
+ #             properties:
+ #               username:
+ #                 type:        string
+ #                 description: Username used to authenticate the user
+ #               password:
+ #                 type:        string
+ #                 description: Password used to authenticate the user
+ #     responses:
+ #       200:
+ #         description:         Session token authenticated
+ #         content:
+ #           application/json:
+ #             schema:
+ #               type: object
+ #               properties:
+ #                 sessionSecret:
+ #                   type: string
+ #                   description: The session secret used to authenticate future requests
+ #       400:
+ #         description:         Bad request
+ #         content:
+ #           application/json:
+ #             schema:
+ #               $ref:          '#/components/Listing/Error'
+ #       500:
+ #         $ref:                '#/components/responses/InternalError'
+ # /properties/:id:
+ #   get:
+ #     tags:                    [properties]
+ #     summary:                 Deauthenticate a user
+ #     operationId:             logoutUser
+ #     responses:
+ #       200:
+ #         description:         Session token revoked
+ #       400:
+ #         description:         Bad request
+ #         content:
+ #           application/json:
+ #             schema:
+ #               $ref:          '#/components/responses/Error'
+ #       500:
+ #         $ref:                '#/components/responses/InternalError'
+ #     security:
+ #       - BearerAuth:          []
 
 components:
   securitySchemes:
     BearerAuth:
-      type:                    http
-      scheme:                  bearer
+      type: http
+      scheme: bearer
   schemas:
     User:
-      type:                    object
-      required:                [username, password]
+      type: object
+      required:
+        - username
+        - password
       properties:
         username:
-          type:                string
-          description:         Username for the user
+          type: string
+          description: Username for the user
         password:
-          type:                string
-          description:         Password for the user
+          type: string
+          description: Password for the user
     Message:
-      type:                    object
-      required:                [text, author, recipient]
+      type: object
+      required:
+        - text
+        - author
+        - recipient
       properties:
         text:
-          type:                string
-          description:         Message contents
+          type: string
+          description: Message contents
         author:
-          type:                string
-          x-mongoose-type:     ObjectId
-          description:         Id of user that authored the message
+          type: string
+          x-mongoose-type: ObjectId
+          description: Id of user that authored the message
         recipient:
-          type:                string
-          x-mongoose-type:     ObjectId
-          description:         Id of user that received the message
+          type: string
+          x-mongoose-type: ObjectId
+          description: Id of user that received the message
     Listing:
-      type:                    object
-      required:                [address, details]
+      type: object
+      required:
+        - address
+        - details
       properties:
         address:
-          type:                string
-          description:         Listing's physical address
+          type: string
+          description: Listing's physical address
         details:
-          type:                object
-          description:         More details about a listing
-          required:            [price, size]
+          type: object
+          description: More details about a listing
+          required:
+            - price
+            - size
           properties:
             price:
-              type:            number
-              description:     Price of the listing in USD
+              type: number
+              description: Price of the listing in USD
             size:
-              type:            number
-              description:     Size of the listing in squarefeet
+              type: number
+              description: Size of the listing in squarefeet
             features:
-              type:            array
-              description:     Features of the listing
+              type: array
+              description: Features of the listing
               items:
-                type:                    string
-                enum:                    [office, garage, fireplace, pool, ecofriendly]
+                type: string
+                enum:
+                  - office
+                  - garage
+                  - fireplace
+                  - pool
+                  - ecofriendly
   responses:
-    Error:
-      type:                    object
-      properties:
-        error:
-          description:         Human readable error message
-          type:                string
-    InternalError:
-      description:         Internal Server Error
+    BadRequest:
+      description: Bad request
       content:
         application/json:
           schema:
-            type:                    object
+            type: object
             properties:
               error:
-                description:         Human readable error message
-                type:                string
+                description: Human readable error message
+                type: string
+    InternalError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                description: Human readable error message
+                type: string

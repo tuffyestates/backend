@@ -14,5 +14,5 @@ const yaml = require('js-yaml');
         process.exit(1);
     }
 
-    fs.writeFileSync('./src/api.yaml', yaml.safeDump(spec));
+    fs.writeFileSync('./src/api.yaml', yaml.safeDump(spec, {noRefs: true}));
 })();
