@@ -34,7 +34,7 @@ const asyncHandler = fn =>
 
 // If an error is caught while processing a request we will notify the user
 function errorHandler(err, req, res, next) {
-    const status = err.statusCode || err.status || 500;
+    const status = err.status || 500;
 
     // 500 (Internal Server Error) represents an error that shouldn't happen
     if (status === 500) {
@@ -78,6 +78,9 @@ module.exports = function initWeb(database) {
 
     // Browsers require cors to be enabled when making cross domain requests
     app.use(cors());
+
+    // Serve static files
+    app.use('/static', express.static(process.env.TE_STATIC_DIRECTORY || '/srv/tuffyestates/production', {fallthrough: false}));
 
     // All /api/* calls should be handled by this api router
     const api = express.Router();
@@ -159,10 +162,10 @@ module.exports = function initWeb(database) {
     api.use(errorHandler);
 
     // Middleware to log all responses to the Logger
-    app.use(function initialHandler(req, res, next) {
+    app.use(function finalHandler(req, res, next) {
 
         // Some trace logging for every incomming request
-        const statusCode = res.statusCode || res.status;
+        const statusCode = res.statusCode;
         Logger.trace("-> |", statusCode, phraseWell[statusCode]);
 
         next();

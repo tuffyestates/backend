@@ -21,6 +21,7 @@ deployment_staging:
     TE_SSL_CERT_PATH: '/etc/letsencrypt/live/tuffyestates.sparling.us/fullchain.pem'
     TE_SSL_KEY_PATH: '/etc/letsencrypt/live/tuffyestates.sparling.us/privkey.pem'
     TE_MONGODB_URL: 'mongodb://localhost:27017/tuffyestates_master'
+    TE_STATIC_DIRECTORY: '/srv/tuffyestates/staging'
   environment:
     name: staging
     url: https://tuffyestates.sparling.us:11638
@@ -36,6 +37,7 @@ deployment_develop:
     TE_SSL_KEY_PATH: '/etc/letsencrypt/live/tuffyestates.sparling.us/privkey.pem'
     TE_PORT: '11637'
     TE_MONGODB_URL: 'mongodb://localhost:27017/tuffyestates_develop'
+    TE_STATIC_DIRECTORY: '/srv/tuffyestates/develop'
   environment:
     name: develop
     url: https://tuffyestates.sparling.us:11637
