@@ -1,4 +1,4 @@
-const https = require('https');
+const http2 = require('http2');
 const fs = require('fs');
 const path = require('path');
 
@@ -162,7 +162,7 @@ module.exports = function initWeb(database) {
 
 
     // api.post('/properties', asyncHandler(async function login(req, res, next) {
-      
+
     //     let property = new database.models.Listing(req.body);
 
     //     await user.save();
@@ -170,7 +170,7 @@ module.exports = function initWeb(database) {
 
 
     // api.post('/properties/patch', asyncHandler(async function login(req, res, next) {
-      
+
     //     Listing.findByIdAndUpdate(req.params.id, req.body.Listing, function(err, updatedListing){
     //         if(err){
     //            // res.redirect();
@@ -179,16 +179,16 @@ module.exports = function initWeb(database) {
     //         }
     //       });
 
-        
+
     // }));
 
 
     // api.get('/properties/:id', asyncHandler(async function login(req, res, next) {
-      
-        
+
+
     // }));
 
-    
+
 
 
 
@@ -210,7 +210,7 @@ module.exports = function initWeb(database) {
 
     if (process.env.TE_SSL_CERT_PATH && process.env.TE_SSL_KEY_PATH) {
         Logger.info("Using SSL!");
-        app = https.createServer({
+        app = http2.createSecureServer({
             cert: fs.readFileSync(process.env.TE_SSL_CERT_PATH),
             key: fs.readFileSync(process.env.TE_SSL_KEY_PATH)
         }, app);
