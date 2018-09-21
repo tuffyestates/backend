@@ -97,7 +97,6 @@ paths:
         - BearerAuth:          []
 
 
-
   # Properties
 
   /properties:
@@ -167,7 +166,7 @@ paths:
   /properties/:id:
     get:
       tags:                    [properties]
-      summary:                 Deauthenticate a user
+      summary:                 show property with returned _id
       operationId:             logoutUser
       responses:
         200:
@@ -180,11 +179,38 @@ paths:
                 $ref:          '#/components/schemas/Error'
       security:
         - BearerAuth:          []
-
-
-
-
-
+        
+        
+        
+  # Message
+  /message:
+    post:
+      tags:                    [message]
+      summary:                 create message or chat box ?
+      operationId:             createProperty
+      requestBody:
+        required:              true
+        content:
+          multipart/form-data:
+            schema:
+        #      $ref:            '#/components/Listing/properties'
+      responses:
+        201:
+          description:         Create property
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionSecret:
+                    type: string
+                    description: The session secret used to authenticate future requests
+        400:
+          description:         Bad request
+          content:
+            application/json:
+              schema:
+                $ref:          '#/components/Listing/Error'
 
 
 
