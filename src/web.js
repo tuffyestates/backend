@@ -1,4 +1,4 @@
-const http2 = require('http2');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
@@ -210,7 +210,7 @@ module.exports = function initWeb(database) {
 
     if (process.env.TE_SSL_CERT_PATH && process.env.TE_SSL_KEY_PATH) {
         Logger.info("Using SSL!");
-        app = http2.createSecureServer({
+        app = https.createServer({
             cert: fs.readFileSync(process.env.TE_SSL_CERT_PATH),
             key: fs.readFileSync(process.env.TE_SSL_KEY_PATH)
         }, app);
