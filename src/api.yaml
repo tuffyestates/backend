@@ -42,7 +42,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref:          '#/components/schemas/Error'
+                $ref:          '#/components/responses/Error'
+        500:
+          $ref:                '#/components/responses/InternalError'
   /users/login:
     post:
       tags:                    [users]
@@ -59,9 +61,11 @@ paths:
                 username:
                   type:        string
                   description: Username used to authenticate the user
+                  minLength:   3
                 password:
                   type:        string
                   description: Password used to authenticate the user
+                  minLength:   3
       responses:
         200:
           description:         Session token authenticated
@@ -78,7 +82,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref:          '#/components/schemas/Error'
+                $ref:          '#/components/responses/Error'
+        500:
+          $ref:                '#/components/responses/InternalError'
   /users/logout:
     head:
       tags:                    [users]
@@ -92,7 +98,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref:          '#/components/schemas/Error'
+                $ref:          '#/components/responses/Error'
+        500:
+          $ref:                '#/components/responses/InternalError'
       security:
         - BearerAuth:          []
 
@@ -128,6 +136,8 @@ paths:
             application/json:
               schema:
                 $ref:          '#/components/Listing/Error'
+        500:
+          $ref:                '#/components/responses/InternalError'
   /properties/patch:
     post:
       tags:                    [properties]
@@ -164,6 +174,8 @@ paths:
             application/json:
               schema:
                 $ref:          '#/components/Listing/Error'
+        500:
+          $ref:                '#/components/responses/InternalError'
   /properties/:id:
     get:
       tags:                    [properties]
@@ -177,20 +189,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref:          '#/components/schemas/Error'
+                $ref:          '#/components/responses/Error'
+        500:
+          $ref:                '#/components/responses/InternalError'
       security:
         - BearerAuth:          []
-
-
-
-
-
-
-
-
-
-
-
 
 
 components:
@@ -246,13 +249,22 @@ components:
               type:            array
               description:     Features of the listing
               items:
-                $ref:          '#/components/schemas/Feature'
-    Feature:
-      type:                    string
-      enum:                    [office, garage, fireplace, pool, ecofriendly]
+                type:                    string
+                enum:                    [office, garage, fireplace, pool, ecofriendly]
+  responses:
     Error:
       type:                    object
       properties:
         error:
           description:         Human readable error message
           type:                string
+    InternalError:
+      description:         Internal Server Error
+      content:
+        application/json:
+          schema:
+            type:                    object
+            properties:
+              error:
+                description:         Human readable error message
+                type:                string

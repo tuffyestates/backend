@@ -77,7 +77,7 @@ module.exports = function initWeb(database) {
     });
 
     // Browsers require cors to be enabled when making cross domain requests
-    app.use(cors())
+    app.use(cors());
 
     // All /api/* calls should be handled by this api router
     const api = express.Router();
