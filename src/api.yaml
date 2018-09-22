@@ -188,7 +188,7 @@ components:
           type: string
           x-mongoose-type: ObjectId
           description: Id of user that received the message
-    Listing:
+    Property:
       type: object
       required:
         - address
@@ -196,23 +196,23 @@ components:
       properties:
         address:
           type: string
-          description: Listing's physical address
+          description: Property's physical address
         details:
           type: object
-          description: More details about a listing
+          description: More details about a property
           required:
             - price
             - size
           properties:
             price:
               type: number
-              description: Price of the listing in USD
+              description: Price of the property in USD
             size:
               type: number
-              description: Size of the listing in squarefeet
+              description: Size of the property in squarefeet
             features:
               type: array
-              description: Features of the listing
+              description: Features of the property
               items:
                 type: string
                 enum:
@@ -220,7 +220,6 @@ components:
                   - garage
                   - fireplace
                   - pool
-                  - ecofriendly
   responses:
     BadRequest:
       description: Bad request
