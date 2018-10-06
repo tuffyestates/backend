@@ -150,7 +150,7 @@ paths:
       summary:                 Get a property by ID
       parameters: 
         - in: path
-          name: userId
+          name: id
           schema:
             type: integer
           required: true 
