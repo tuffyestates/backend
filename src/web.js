@@ -34,7 +34,7 @@ const asyncHandler = fn =>
 
 // If an error is caught while processing a request we will notify the user
 function errorHandler(err, req, res, next) {
-    const status = err.status || 500;
+    const status = err.status || err.name === 'ValidationError' ? 400 : 500;
 
     // 500 (Internal Server Error) represents an error that shouldn't happen
     if (status === 500) {
@@ -64,13 +64,6 @@ module.exports = function initWeb(database) {
     // Middleware to log all requests to the Logger
     app.use(function initialHandler(req, res, next) {
 
-        // Allow requests from any domain
-        // TODO: This shouldn't be * (unsecure)
-        // res.header("Access-Control-Allow-Origin", "*");
-        //
-        // // Need this to use swagger examples
-        // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Authorization, X-Forwarded-For, Content-Type, Accept");
-
         // Some trace logging for every incomming request
         Logger.trace("<- |", req.method, req.url, req.path);
 
@@ -90,7 +83,7 @@ module.exports = function initWeb(database) {
     // Serve the api specification file on /api
     const apiSpecFile = fs.readFileSync(path.join(__dirname, 'api.yaml'), 'utf8');
     api.get('/', (req, res, next) => {
-        
+
         // Allow caching of the api file
         // res.append('Last-Modified', new Date());
 
