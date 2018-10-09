@@ -41,9 +41,10 @@ function errorHandler(err, req, res, next) {
         Logger.error(err.message);
     }
     Logger.trace(err);
-    res.status(status).send({
+    res.status(status);
+    res.body = {
         error: err.toString()
-    });
+    };
     next();
 }
 
@@ -87,8 +88,16 @@ module.exports = function initWeb(database) {
     app.use('/api', api);
 
     // Serve the api specification file on /api
-    const apiSpecFile = fs.readFileSync(path.join(__dirname, 'api.yaml'));
-    api.get('/', (req, res) => res.send(apiSpecFile));
+    const apiSpecFile = fs.readFileSync(path.join(__dirname, 'api.yaml'), 'utf8');
+    api.get('/', (req, res, next) => {
+        
+        // Allow caching of the api file
+        // res.append('Last-Modified', new Date());
+
+        res.type('application/yaml');
+        res.body = apiSpecFile;
+        next();
+    });
 
     // Use a JWT middleware to validate a json web token containing authentication info
     api.use((...args) => {
@@ -135,7 +144,7 @@ module.exports = function initWeb(database) {
 
         Logger.debug(`User registered:`, req.body.username);
 
-        res.status(201).send();
+        res.status(201);
 
         next();
     }));
@@ -146,17 +155,13 @@ module.exports = function initWeb(database) {
             permissions: ['user']
         }, await generateSecret(req));
 
-        res.json({
-            token
-        });
+        res.body = {token};
 
         next();
     }));
 
 
     api.head('/users/logout', asyncHandler(async function logout(req, res, next) {
-        res.send();
-
         next();
     }));
 
@@ -204,6 +209,15 @@ module.exports = function initWeb(database) {
         // Some trace logging for every incomming request
         const statusCode = res.statusCode;
         Logger.trace("-> |", statusCode, phraseWell[statusCode]);
+
+        // If the body is json, send json and convert body to stringified json
+        if (typeof res.body === 'object') {
+            res.type('application/json');
+            res.body = JSON.stringify(res.body);
+        }
+
+        // Send body
+        res.send(res.body);
 
         next();
     });
