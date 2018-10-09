@@ -126,6 +126,7 @@ paths:
       tags:
         - users
       summary: Deauthenticate a user
+      description: This is a no op request. Nothing is actually done on the server. Deauthentication is handled by the client removing its session token from it's request Authentication header.
       operationId: logoutUser
       responses:
         '200':
@@ -157,6 +158,7 @@ components:
     BearerAuth:
       type: http
       scheme: bearer
+      bearerFormat: JWT
   schemas:
     User:
       type: object
