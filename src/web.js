@@ -87,7 +87,8 @@ module.exports = function initWeb(database) {
     app.use('/api', api);
 
     // Serve the api specification file on /api
-    api.get('/', (req, res) => res.sendFile(path.join(__dirname, 'api.yaml')));
+    const apiSpecFile = fs.readFileSync(path.join(__dirname, 'api.yaml'));
+    api.get('/', (req, res) => res.send(apiSpecFile));
 
     // Use a JWT middleware to validate a json web token containing authentication info
     api.use((...args) => {
