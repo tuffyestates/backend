@@ -7,7 +7,14 @@ const mongoose = require('mongoose');
 const Logger = require('../logger');
 const o2m = require('./o2m.js');
 
+let databaseSingleton = null;
+
 module.exports = async function initDatabase(url) {
+
+    if (databaseSingleton) {
+        return databaseSingleton;
+    }
+
     await mongoose.connect(url, {
         useNewUrlParser: true
     });
@@ -24,5 +31,7 @@ module.exports = async function initDatabase(url) {
         mongoose.connection.close();
         throw e;
     }
+
+    databaseSingleton = mongoose;
     return mongoose;
 }

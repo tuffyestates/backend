@@ -11,7 +11,7 @@ servers:
     description: Development Server
 tags:
   - name: meta
-    description: Pertaining to api inner workings
+    description: Pertaining to API inner workings
   - name: users
     description: Everything about users
 paths:
