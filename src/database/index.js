@@ -16,7 +16,9 @@ module.exports = async function initDatabase(url) {
     }
 
     await mongoose.connect(url, {
-        useNewUrlParser: true
+        useCreateIndex: true,
+        useNewUrlParser: true,
+        autoIndex: false
     });
 
     try {
@@ -26,6 +28,8 @@ module.exports = async function initDatabase(url) {
 
         for (const [name, schema] of Object.entries(o2m(openApiDocument))) {
             mongoose.model(name, schema);
+            mongoose.models[name].ensureIndexes();
+            Logger.trace(`Created model for "${name}":`);
         }
     } catch (e) {
         mongoose.connection.close();

@@ -1,7 +1,8 @@
-openapi: 3.0.0
+openapi: 3.0.1
 info:
   title: Tuffy Estates
   version: 0.1.0
+  description: The is the backend specification.
 servers:
   - url: 'http://localhost:11638/api'
     description: Local Development Server
@@ -183,6 +184,8 @@ components:
       properties:
         username:
           type: string
+          x-mongoose-index: true
+          x-mongoose-unique: true
           description: Username for the user
         password:
           type: string

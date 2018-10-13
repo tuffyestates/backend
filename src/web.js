@@ -125,7 +125,7 @@ module.exports = function initWeb() {
             // method examples: 'get', 'post', 'head'
 
             // Replace '/' with '.', add method, remove all leading '.s
-            const controllerPath = `${path.replace(/\//g, '.')}.${method}`.replace(/^\.+/g, '');
+            const controllerPath = `${path.replace(/\//g, '.')}.${method}`.replace(/^\.+/, '');
 
             // Load controller
             const controller = get(controllers, controllerPath);
