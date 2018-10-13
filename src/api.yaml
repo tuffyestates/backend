@@ -1,38 +1,38 @@
-openapi:                       3.0.0
+openapi: 3.0.0
 info:
-  title:                       Tuffy Estates
-  version:                     0.1.0
+  title: Tuffy Estates
+  version: 0.1.0
 servers:
-  - url:                       http://localhost:11638/api
-    description:               Local Development Server
-  - url:                       https://tuffyestates.sparling.us:11638/api
-    description:               Staging Server
-  - url:                       https://tuffyestates.sparling.us:11637/api
-    description:               Development Server
+  - url: http://localhost:11638/api
+    description: Local Development Server
+  - url: https://tuffyestates.sparling.us:11638/api
+    description: Staging Server
+  - url: https://tuffyestates.sparling.us:11637/api
+    description: Development Server
 
 # users
 tags:
-  - name:                      users
-    description:               "Everything about users"
-  - name:                      properties
-    description:               "Everything about Properties"
-  - name:                      message
-    description:               "Everything about message"
+  - name: users
+    description: "Everything about users"
+  - name: properties
+    description: "Everything about Properties"
+  - name: message
+    description: "Everything about message"
 paths:
   /users:
     post:
-      tags:                    [users]
-      summary:                 Registers a user
-      operationId:             registerUser
+      tags: [users]
+      summary: Registers a user
+      operationId: registerUser
       requestBody:
-        required:              true
+        required: true
         content:
           multipart/form-data:
             schema:
-              $ref:            '#/components/schemas/User'
+              $ref: "#/components/schemas/User"
       responses:
         201:
-          description:         User registered
+          description: User registered
           content:
             application/json:
               schema:
@@ -42,33 +42,33 @@ paths:
                     type: string
                     description: The session secret used to authenticate future requests
         400:
-          description:         Bad request
+          description: Bad request
           content:
             application/json:
               schema:
-                $ref:          '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
   /users/login:
     post:
-      tags:                    [users]
-      summary:                 Authenticate a user
-      operationId:             loginUser
+      tags: [users]
+      summary: Authenticate a user
+      operationId: loginUser
       requestBody:
-        required:              true
+        required: true
         content:
           multipart/form-data:
             schema:
-              type:            object
-              required:        [username, password]
+              type: object
+              required: [username, password]
               properties:
                 username:
-                  type:        string
+                  type: string
                   description: Username used to authenticate the user
                 password:
-                  type:        string
+                  type: string
                   description: Password used to authenticate the user
       responses:
         200:
-          description:         Session token authenticated
+          description: Session token authenticated
           content:
             application/json:
               schema:
@@ -78,180 +78,194 @@ paths:
                     type: string
                     description: The session secret used to authenticate future requests
         400:
-          description:         Bad request
+          description: Bad request
           content:
             application/json:
               schema:
-                $ref:          '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
   /users/logout:
     head:
-      tags:                    [users]
-      summary:                 Deauthenticate a user
-      operationId:             logoutUser
+      tags: [users]
+      summary: Deauthenticate a user
+      operationId: logoutUser
       responses:
         200:
-          description:         Session token revoked
+          description: Session token revoked
         400:
-          description:         Bad request
+          description: Bad request
           content:
             application/json:
               schema:
-                $ref:          '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
       security:
-        - BearerAuth:          []
-
+        - BearerAuth: []
 
   # Properties
 
   /properties:
     post:
-      tags:                    [properties]
-      summary:                 create property
-      operationId:             createProperty
+      tags: [properties]
+      summary: create property
+      operationId: createProperty
       requestBody:
-        required:              true
+        required: true
         content:
           multipart/form-data:
             schema:
-              $ref:            '#/components/schemas/Listing'
+              $ref: "#/components/schemas/Listing"
       responses:
         201:
-          description:         Create property
+          description: Create property
         400:
-          description:         Bad request
+          description: Bad request
           content:
             application/json:
               schema:
-                $ref:          '#/components/schemas/Error'
-                
+                $ref: "#/components/schemas/Error"
+
     patch:
-      tags:                    [properties]
-      summary:                 update properties
-      operationId:             updateProperties
+      tags: [properties]
+      summary: update property
+      operationId: updateProperty
       requestBody:
-        required:              true
+        required: true
         content:
           multipart/form-data:
             schema:
-              $ref:            '#/components/schemas/Listing'
+              type: object
+              properties:
+                address:
+                  type: string
+                  description: Listing's physical address
+                details:
+                  type: object
+                  description: More details about a listing
+                  properties:
+                    price:
+                      type: number
+                      description: Price of the listing in USD
+                    size:
+                      type: number
+                      description: Size of the listing in squarefeet
+                    features:
+                      type: array
+                      description: Features of the listing
+                      items:
+                        $ref: "#/components/schemas/Feature"ç
       responses:
         200:
-          description:        Update Success
+          description: Update Success
         400:
-          description:         Bad request
+          description: Bad request
           content:
             application/json:
               schema:
-                $ref:          '#/components/schemas/Error'
-                
-  /properties/{id}:    
+                $ref: "#/components/schemas/Error"
+
+  /properties/{id}:
     get:
-      tags:                    [properties]
-      summary:                 Get a property by ID
-      parameters: 
+      tags: [properties]
+      summary: Get a property by ID
+      parameters:
         - in: path
           name: id
           schema:
             type: integer
-          required: true 
+          required: true
           description: Numeric ID of the user to get
       responses:
         200:
-          description:         Success
+          description: Success
         400:
-          description:         Bad request
+          description: Bad request
           content:
             application/json:
               schema:
-                $ref:          '#/components/schemas/Error'
-        
+                $ref: "#/components/schemas/Error"
 
-
- # Message
+  # Message
 
   /message:
     post:
-      tags:                    [message]
-      summary:                 create message
-      operationId:             createMessage
+      tags: [message]
+      summary: create message
+      operationId: createMessage
       requestBody:
-        required:              true
+        required: true
         content:
           multipart/form-data:
             schema:
-              $ref:            '#/components/schemas/Message'
+              $ref: "#/components/schemas/Message"
       responses:
         201:
-          description:         Create message
+          description: Create message
         400:
-          description:         Bad request
+          description: Bad request
           content:
             application/json:
               schema:
-                $ref:          '#/components/schemas/Error'
-                
-
+                $ref: "#/components/schemas/Error"
 
 components:
   securitySchemes:
     BearerAuth:
-      type:                    http
-      scheme:                  bearer
+      type: http
+      scheme: bearer
   schemas:
     User:
-      type:                    object
-      required:                [username, password]
+      type: object
+      required: [username, password]
       properties:
         username:
-          type:                string
-          description:         Username for the user
+          type: string
+          description: Username for the user
         password:
-          type:                string
-          description:         Password for the user
+          type: string
+          description: Password for the user
     Message:
-      type:                    object
-      required:                [text, author, recipient]
+      type: object
+      required: [text, author, recipient]
       properties:
         text:
-          type:                string
-          description:         Message contents
+          type: string
+          description: Message contents
         author:
-          type:                string
-          x-mongoose-type:     ObjectId
-          description:         Id of user that authored the message
+          type: string
+          x-mongoose-type: ObjectId
+          description: Id of user that authored the message
         recipient:
-          type:                string
-          x-mongoose-type:     ObjectId
-          description:         Id of user that received the message
+          type: string
+          x-mongoose-type: ObjectId
+          description: Id of user that received the message
     Listing:
-      type:                    object
-      required:                [address, details]
+      type: object
+      required: [address, details]
       properties:
         address:
-          type:                string
-          description:         Listing's physical address
+          type: string
+          description: Listing's physical address
         details:
-          type:                object
-          description:         More details about a listing
-          required:            [price, size]
+          type: object
+          description: More details about a listing
+          required: [price, size]
           properties:
             price:
-              type:            number
-              description:     Price of the listing in USD
+              type: number
+              description: Price of the listing in USD
             size:
-              type:            number
-              description:     Size of the listing in squarefeet
+              type: number
+              description: Size of the listing in squarefeet
             features:
-              type:            array
-              description:     Features of the listing
+              type: array
+              description: Features of the listing
               items:
-                $ref:          '#/components/schemas/Feature'
+                $ref: "#/components/schemas/Feature"
     Feature:
-      type:                    string
-      enum:                    [office, garage, fireplace, pool, ecofriendly]
+      type: string
+      enum: [office, garage, fireplace, pool, ecofriendly]
     Error:
-      type:                    object
+      type: object
       properties:
         error:
-          description:         Human readable error message
-          type:                string
+          description: Human readable error message
+          type: string
