@@ -169,6 +169,126 @@ paths:
                     type: string
       security:
         - BearerAuth: []
+<<<<<<< HEAD
+=======
+
+# Properties
+
+  /properties:
+    post:
+      tags:                    [properties]
+      summary:                 create property
+      operationId:             createProperty
+      requestBody:
+        required:              true
+        content:
+          multipart/form-data:
+            schema:
+              $ref:            '#/components/Listing/properties'
+      responses:
+        201:
+          description:         Create property
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionSecret:
+                    type: string
+                    description: The session secret used to authenticate future requests
+        400:
+          description:         Bad request
+          content:
+            application/json:
+              schema:
+                $ref:          '#/components/Listing/Error'
+  /properties/patch:
+    post:
+      tags:                    [properties]
+      summary:                 update property
+      operationId:             propertyUpdate
+      requestBody:
+        required:              true
+        content:
+          multipart/form-data:
+            schema:
+              type:            object
+              required:        [username, password]
+              properties:
+                username:
+                  type:        string
+                  description: Username used to authenticate the user
+                password:
+                  type:        string
+                  description: Password used to authenticate the user
+      responses:
+        200:
+          description:         Session token authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionSecret:
+                    type: string
+                    description: The session secret used to authenticate future requests
+        400:
+          description:         Bad request
+          content:
+            application/json:
+              schema:
+                $ref:          '#/components/Listing/Error'
+  /properties/:id:
+    get:
+      tags:                    [properties]
+      summary:                 show property with returned _id
+      operationId:             logoutUser
+      responses:
+        200:
+          description:         Session token revoked
+        400:
+          description:         Bad request
+          content:
+            application/json:
+              schema:
+                $ref:          '#/components/schemas/Error'
+      security:
+        - BearerAuth:          []
+
+
+
+  # Message
+  /message:
+    post:
+      tags:                    [message]
+      summary:                 create message or chat box ?
+      operationId:             createProperty
+      requestBody:
+        required:              true
+        content:
+          multipart/form-data:
+            schema:
+        #      $ref:            '#/components/Listing/properties'
+      responses:
+        201:
+          description:         Create property
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessionSecret:
+                    type: string
+                    description: The session secret used to authenticate future requests
+        400:
+          description:         Bad request
+          content:
+            application/json:
+              schema:
+                $ref:          '#/components/Listing/Error'
+
+
+>>>>>>> feature/api
 components:
   securitySchemes:
     BearerAuth:
