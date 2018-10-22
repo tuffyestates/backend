@@ -194,7 +194,7 @@ paths:
                       type: array
                       description: Features of the listing
                       items:
-                        $ref: "#/components/schemas/Feature"ç
+                        $ref: "#/components/schemas/Feature"
       responses:
         200:
           description: Update Success
