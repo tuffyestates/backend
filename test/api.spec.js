@@ -9,9 +9,9 @@ const yaml = require('js-yaml');
 
         await SwaggerParser.validate(spec);
 
-        fs.writeFileSync('./src/api.yaml', yaml.safeDump(spec, {
-            noRefs: true
-        }));
+        // fs.writeFileSync('./src/api.yaml', yaml.safeDump(spec, {
+        //     noRefs: true
+        // }));
     } catch (e) {
         // eslint-disable-next-line no-console
         console.error('API Specifiation Error:', e.toString());

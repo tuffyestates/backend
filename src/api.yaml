@@ -66,25 +66,9 @@ paths:
                     type: string
                     description: The session secret used to authenticate future requests
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    description: Human readable error message
-                    type: string
+          $ref: "#/components/responses/BadRequest"
         '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    description: Human readable error message
-                    type: string
+          $ref: "#/components/responses/InternalError"
   /users/login:
     post:
       tags:
@@ -121,11 +105,7 @@ paths:
                     type: string
                     description: The session secret used to authenticate future requests
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/BadRequest"
   /users/logout:
     head:
       tags: [users]
@@ -135,11 +115,7 @@ paths:
         200:
           description: Session token revoked
         400:
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/BadRequest"
       security:
         - BearerAuth: []
 
@@ -155,16 +131,12 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/Listing"
+              $ref: "#/components/schemas/Property"
       responses:
         201:
-          description: Create property
+          description: Created property
         400:
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/BadRequest"
 
     patch:
       tags: [properties]
@@ -194,16 +166,12 @@ paths:
                       type: array
                       description: Features of the listing
                       items:
-                        $ref: "#/components/schemas/Feature"
+                        $ref: "#/components/schemas/Property/properties/details/properties/features"
       responses:
         200:
           description: Update Success
         400:
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/BadRequest"
 
   /properties/{id}:
     get:
@@ -219,12 +187,12 @@ paths:
       responses:
         200:
           description: Success
-        400:
-          description: Bad request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/Property"
+        400:
+          $ref: "#/components/responses/BadRequest"
 
   # Message
 
@@ -243,11 +211,7 @@ paths:
         201:
           description: Create message
         400:
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/BadRequest"
 
 components:
   securitySchemes:
