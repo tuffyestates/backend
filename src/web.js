@@ -1,25 +1,25 @@
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
 
-const express = require('express');
-const multer = require('multer');
+import express from 'express';
+import multer from 'multer';
 const formProcessor = multer();
-const {
+import {
     OpenApiValidator
-} = require("express-openapi-validate");
-const jsYaml = require("js-yaml");
-const jwtExpress = require('express-jwt');
-const phraseWell = require('know-your-http-well').statusCodesToPhrases;
-const cors = require('cors');
-const get = require('lodash.get');
+} from "express-openapi-validate";
+import jsYaml from "js-yaml";
+import jwtExpress from 'express-jwt';
+import {statusCodesToPhrases} from 'know-your-http-well';
+import cors from 'cors';
+import get from 'lodash.get';
 
 // Require global logger
-const Logger = require('./logger');
-const controllers = require('./controllers');
-const {
+import Logger from './logger';
+import controllers from './controllers';
+import {
     generateSecret
-} = require('./utils');
+} from './utils';
 
 // Read OpenAPI specification and create request validator
 const openApiDocument = jsYaml.safeLoad(fs.readFileSync(path.join(__dirname, 'api.yaml'), "utf-8"));
@@ -53,7 +53,7 @@ function errorHandler(err, req, res, next) {
 
 let appSingleton = null;
 
-module.exports = function initWeb() {
+export default function initWeb() {
 
     if (appSingleton) {
         return appSingleton;
@@ -195,7 +195,7 @@ module.exports = function initWeb() {
         }
 
         // Some trace logging for every incomming request
-        Logger.trace("-> |", statusCode, phraseWell[statusCode]);
+        Logger.trace("-> |", statusCode, statusCodesToPhrases[statusCode]);
 
         next();
     });

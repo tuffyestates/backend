@@ -1,10 +1,10 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-const DB = require('../database');
-const Logger = require('../logger');
-const {generateSecret} = require('../utils');
+import DB from '../database';
+import Logger from '../logger';
+import {generateSecret} from '../utils';
 
-module.exports = {
+export default {
     // Handle user registration
     post: async function register(req, res, next) {
         let database = await DB();

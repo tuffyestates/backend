@@ -19,11 +19,11 @@ function openSchema2Mongoose(oas) {
     return properties;
 }
 
-module.exports = function(spec) {
+export default function convert(spec) {
     let output = {};
     for (const [name, schema] of Object.entries(spec.components.schemas)) {
         if (schema)
             output[name] = new mongoose.Schema(openSchema2Mongoose(schema));
     }
     return output;
-};
+}

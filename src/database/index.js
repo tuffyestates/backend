@@ -1,15 +1,15 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-const jsYaml = require("js-yaml");
-const mongoose = require('mongoose');
+import jsYaml from "js-yaml";
+import mongoose from 'mongoose';
 
-const Logger = require('../logger');
-const o2m = require('./o2m.js');
+import Logger from '../logger';
+import o2m from './o2m.js';
 
 let databaseSingleton = null;
 
-module.exports = async function initDatabase(url) {
+export default async function initDatabase(url) {
 
     if (databaseSingleton) {
         return databaseSingleton;

@@ -1,7 +1,7 @@
 const Tracer = require('nmmes-tracer');
 const chalk = require('chalk');
 
-const Logger = new Tracer.Logger({
+export default new Tracer.Logger({
     level: 'trace',
     dateformat: 'llll',
     format: ["<{{=it.title}}> {{=it.message}}",
@@ -24,5 +24,3 @@ const Logger = new Tracer.Logger({
         new Tracer.transports.Console()
     ]
 });
-
-module.exports = Logger;

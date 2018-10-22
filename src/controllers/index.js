@@ -1,10 +1,10 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 // Serve the api specification file on /api
 const apiSpecFile = fs.readFileSync(path.join(__dirname, '../api.yaml'), 'utf8');
 
-module.exports = {
+export default {
     get: (req, res, next) => {
 
         // Allow caching of the api file
