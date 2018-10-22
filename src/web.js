@@ -1,28 +1,29 @@
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
 
-const express = require('express');
-const multer = require('multer');
+import express from 'express';
+import multer from 'multer';
 const formProcessor = multer();
-const {
+import {
     OpenApiValidator
-} = require("express-openapi-validate");
-const jsYaml = require("js-yaml");
-const jwtExpress = require('express-jwt');
-const jwt = require('jsonwebtoken');
-const phraseWell = require('know-your-http-well').statusCodesToPhrases;
-const cors = require('cors');
+} from "express-openapi-validate";
+import jsYaml from "js-yaml";
+import jwtExpress from 'express-jwt';
+import {statusCodesToPhrases} from 'know-your-http-well';
+import cors from 'cors';
+import get from 'lodash.get';
 
 // Require global logger
-const Logger = require('./logger');
+import Logger from './logger';
+import controllers from './controllers';
+import {
+    generateSecret
+} from './utils';
 
 // Read OpenAPI specification and create request validator
 const openApiDocument = jsYaml.safeLoad(fs.readFileSync(path.join(__dirname, 'api.yaml'), "utf-8"));
 const validator = new OpenApiValidator(openApiDocument);
-
-// This secret is used to create the JWT
-const SECRET = "vU$Y/+[D;:<XraqlZ/q`lIe~`;\"u2=^H_GEk,@xGY:K4(CMF,'|TSFZAAFM-As)";
 
 // This handles sending out error messages to the client
 // when there is an async error
@@ -34,41 +35,35 @@ const asyncHandler = fn =>
 
 // If an error is caught while processing a request we will notify the user
 function errorHandler(err, req, res, next) {
-    const status = err.statusCode || err.status || 500;
+    const status = err.status || err.name === 'ValidationError' ? 400 : 500;
 
     // 500 (Internal Server Error) represents an error that shouldn't happen
     if (status === 500) {
         Logger.error(err.message);
     }
     Logger.trace(err);
-    res.status(status).send({
+    res.status(status);
+    res.body = {
         error: err.toString()
-    });
+    };
     next();
-}
-
-// Generate a secret that is unique to each user (almost)
-async function generateSecret(req) {
-    const clientIp = req.headers['X-Forwarded-For'] || req.connection.remoteAddress;
-    return clientIp + SECRET;
 }
 
 // Setup API Router ------------------------------------------------------------
 
-module.exports = function initWeb(database) {
+let appSingleton = null;
+
+export default function initWeb() {
+
+    if (appSingleton) {
+        return appSingleton;
+    }
 
     // Create express app and create api path handler
     let app = express();
 
     // Middleware to log all requests to the Logger
     app.use(function initialHandler(req, res, next) {
-
-        // Allow requests from any domain
-        // TODO: This shouldn't be * (unsecure)
-        // res.header("Access-Control-Allow-Origin", "*");
-        //
-        // // Need this to use swagger examples
-        // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Authorization, X-Forwarded-For, Content-Type, Accept");
 
         // Some trace logging for every incomming request
         Logger.trace("<- |", req.method, req.url, req.path);
@@ -77,14 +72,17 @@ module.exports = function initWeb(database) {
     });
 
     // Browsers require cors to be enabled when making cross domain requests
-    app.use(cors())
+    app.use(cors());
+
+    // Serve static files
+    app.use('/static', express.static(process.env.TE_STATIC_DIRECTORY || '/srv/tuffyestates/production', {
+        fallthrough: false
+    }));
 
     // All /api/* calls should be handled by this api router
     const api = express.Router();
     app.use('/api', api);
 
-    // Serve the api specification file on /api
-    api.get('/', (req, res) => res.sendFile(path.join(__dirname, 'api.yaml')));
 
     // Use a JWT middleware to validate a json web token containing authentication info
     api.use((...args) => {
@@ -119,51 +117,85 @@ module.exports = function initWeb(database) {
     // Validate request with OpenAPI specification
     api.use((...args) => validator.validate(args[0].method.toLowerCase(), args[0].path).apply(this, args));
 
-    // - asyncHandler allows us to use an async function to handle requests
-    // Handle user registration
-    api.post('/users', asyncHandler(async function register(req, res, next) {
+    // Process API specification to add paths and their methods
+    for (const [path, methods] of Object.entries(openApiDocument.paths)) {
+        // path examples: '/', '/users', '/users/login'
 
-        // Create a database User from the data provided
-        let user = new database.models.User(req.body);
+        for (const method of Object.keys(methods)) {
+            // method examples: 'get', 'post', 'head'
 
-        // Save the user to the database
-        await user.save();
+            // Replace '/' with '.', add method, remove all leading '.s
+            const controllerPath = `${path.replace(/\//g, '.')}.${method}`.replace(/^\.+/, '');
 
-        Logger.debug(`User registered:`, req.body.username);
+            // Load controller
+            const controller = get(controllers, controllerPath);
 
-        res.status(201).send();
+            // Apply method to api
+            api[method](path, asyncHandler(controller));
+            Logger.trace(`Registered method:`, {
+                path,
+                method
+            });
+        }
+    }
 
-        next();
-    }));
 
-    api.post('/users/login', asyncHandler(async function login(req, res, next) {
-        var token = jwt.sign({
-            sub: 'mongodb-user-objectid',
-            permissions: ['user']
-        }, await generateSecret(req));
 
-        res.json({
-            token
-        });
+    // api.post('/properties', asyncHandler(async function login(req, res, next) {
 
-        next();
-    }));
+    //     let property = new database.models.Listing(req.body);
 
-    api.head('/users/logout', asyncHandler(async function logout(req, res, next) {
-        res.send();
+    //     await user.save();
+    // }));
 
-        next();
-    }));
+
+    // api.post('/properties/patch', asyncHandler(async function login(req, res, next) {
+
+    //     Listing.findByIdAndUpdate(req.params.id, req.body.Listing, function(err, updatedListing){
+    //         if(err){
+    //            // res.redirect();
+    //         } else {
+    //            // res.redirect();
+    //         }
+    //       });
+
+
+    // }));
+
+
+    // api.get('/properties/:id', asyncHandler(async function login(req, res, next) {
+
+
+    // }));
 
     // Handle sending errors to clients
     api.use(errorHandler);
 
     // Middleware to log all responses to the Logger
-    app.use(function initialHandler(req, res, next) {
+    app.use(function finalHandler(req, res, next) {
+
+        let statusCode = res.statusCode;
+
+        if (res.body) {
+
+            // If the body is json, send json and convert body to stringified json
+            if (typeof res.body === 'object') {
+                res.type('application/json');
+                res.body = JSON.stringify(res.body);
+            }
+
+            // Send body
+            if (typeof res.body !== 'boolean')
+                res.send(res.body);
+            else
+                res.send();
+
+        } else {
+            statusCode = 404;
+        }
 
         // Some trace logging for every incomming request
-        const statusCode = res.statusCode || res.status;
-        Logger.trace("-> |", statusCode, phraseWell[statusCode]);
+        Logger.trace("-> |", statusCode, statusCodesToPhrases[statusCode]);
 
         next();
     });
@@ -177,5 +209,6 @@ module.exports = function initWeb(database) {
         }, app);
     }
 
+    appSingleton = app;
     return app;
-};
+}

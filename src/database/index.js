@@ -1,15 +1,24 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-const jsYaml = require("js-yaml");
-const mongoose = require('mongoose');
+import jsYaml from "js-yaml";
+import mongoose from 'mongoose';
 
-const Logger = require('../logger');
-const o2m = require('./o2m.js');
+import Logger from '../logger';
+import o2m from './o2m.js';
 
-module.exports = async function initDatabase(url) {
+let databaseSingleton = null;
+
+export default async function initDatabase(url) {
+
+    if (databaseSingleton) {
+        return databaseSingleton;
+    }
+
     await mongoose.connect(url, {
-        useNewUrlParser: true
+        useCreateIndex: true,
+        useNewUrlParser: true,
+        autoIndex: false
     });
 
     try {
@@ -19,10 +28,14 @@ module.exports = async function initDatabase(url) {
 
         for (const [name, schema] of Object.entries(o2m(openApiDocument))) {
             mongoose.model(name, schema);
+            mongoose.models[name].ensureIndexes();
+            Logger.trace(`Created model for "${name}":`);
         }
     } catch (e) {
         mongoose.connection.close();
         throw e;
     }
+
+    databaseSingleton = mongoose;
     return mongoose;
 }

@@ -19,9 +19,23 @@ tags:
   - name: message
     description: "Everything about message"
 paths:
+  /:
+    get:
+      tags:
+        - meta
+      summary: Request API specification file
+      operationId: retrieveApiSpec
+      responses:
+        '200':
+          description: Success
+          content:
+            application/yaml:
+              schema:
+                type: string
   /users:
     post:
-      tags: [users]
+      tags:
+        - users
       summary: Registers a user
       operationId: registerUser
       requestBody:
@@ -29,9 +43,19 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/User"
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  description: Username for the user
+                password:
+                  type: string
+                  description: Password for the user
       responses:
-        201:
+        '201':
           description: User registered
           content:
             application/json:
@@ -41,15 +65,30 @@ paths:
                   sessionSecret:
                     type: string
                     description: The session secret used to authenticate future requests
-        400:
+        '400':
           description: Bad request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                type: object
+                properties:
+                  error:
+                    description: Human readable error message
+                    type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    description: Human readable error message
+                    type: string
   /users/login:
     post:
-      tags: [users]
+      tags:
+        - users
       summary: Authenticate a user
       operationId: loginUser
       requestBody:
@@ -58,16 +97,20 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [username, password]
+              required:
+                - username
+                - password
               properties:
                 username:
                   type: string
                   description: Username used to authenticate the user
+                  minLength: 3
                 password:
                   type: string
                   description: Password used to authenticate the user
+                  minLength: 3
       responses:
-        200:
+        '200':
           description: Session token authenticated
           content:
             application/json:
@@ -77,7 +120,7 @@ paths:
                   sessionSecret:
                     type: string
                     description: The session secret used to authenticate future requests
-        400:
+        '400':
           description: Bad request
           content:
             application/json:
@@ -211,20 +254,28 @@ components:
     BearerAuth:
       type: http
       scheme: bearer
+      bearerFormat: JWT
   schemas:
     User:
       type: object
-      required: [username, password]
+      required:
+        - username
+        - password
       properties:
         username:
           type: string
+          x-mongoose-index: true
+          x-mongoose-unique: true
           description: Username for the user
         password:
           type: string
           description: Password for the user
     Message:
       type: object
-      required: [text, author, recipient]
+      required:
+        - text
+        - author
+        - recipient
       properties:
         text:
           type: string
@@ -237,35 +288,56 @@ components:
           type: string
           x-mongoose-type: ObjectId
           description: Id of user that received the message
-    Listing:
+    Property:
       type: object
-      required: [address, details]
+      required:
+        - address
+        - details
       properties:
         address:
           type: string
-          description: Listing's physical address
+          description: Property's physical address
         details:
           type: object
-          description: More details about a listing
-          required: [price, size]
+          description: More details about a property
+          required:
+            - price
+            - size
           properties:
             price:
               type: number
-              description: Price of the listing in USD
+              description: Price of the property in USD
             size:
               type: number
-              description: Size of the listing in squarefeet
+              description: Size of the property in squarefeet
             features:
               type: array
-              description: Features of the listing
+              description: Features of the property
               items:
-                $ref: "#/components/schemas/Feature"
-    Feature:
-      type: string
-      enum: [office, garage, fireplace, pool, ecofriendly]
-    Error:
-      type: object
-      properties:
-        error:
-          description: Human readable error message
-          type: string
+                type: string
+                enum:
+                  - office
+                  - garage
+                  - fireplace
+                  - pool
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                description: Human readable error message
+                type: string
+    InternalError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                description: Human readable error message
+                type: string
