@@ -169,8 +169,6 @@ paths:
                     type: string
       security:
         - BearerAuth: []
-<<<<<<< HEAD
-=======
 
 # Properties
 
@@ -288,7 +286,6 @@ paths:
                 $ref:          '#/components/Listing/Error'
 
 
->>>>>>> feature/api
 components:
   securitySchemes:
     BearerAuth:
