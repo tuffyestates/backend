@@ -7,18 +7,24 @@ import {generateSecret} from '../utils';
 export default {
     // Handle user registration
     post: async function register(req, res, next) {
-        let database = await DB();
+        const database = await DB();
 
         // Create a database User from the data provided
         let user = new database.models.User(req.body);
+        user.permissions = ['user', 'property'];
 
         // Save the user to the database
         await user.save();
+        
+        var token = jwt.sign({
+            sub: 'mongodb-user-objectid',
+            permissions: ['user']
+        }, await generateSecret(req));
 
         Logger.trace(`User registered:`, req.body.username);
 
         res.status(201);
-        res.body = true;
+        res.body = {token};
 
         next();
     },

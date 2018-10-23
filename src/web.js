@@ -1,6 +1,7 @@
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
+import assert from 'assert';
 
 import express from 'express';
 import multer from 'multer';
@@ -125,10 +126,11 @@ export default function initWeb() {
             // method examples: 'get', 'post', 'head'
 
             // Replace '/' with '.', add method, remove all leading '.s
-            const controllerPath = `${path.replace(/\//g, '.')}.${method}`.replace(/^\.+/, '');
+            const controllerPath = (path.substr(1).replace(/\/\{.+?\}/g, '').replace(/\//g, '.') + `.${method}`).replace(/^\.+?/, '');
 
             // Load controller
             const controller = get(controllers, controllerPath);
+            assert(controller, `Did not receive valid controller for ${controllerPath}`);
 
             // Apply method to api
             api[method](path, asyncHandler(controller));

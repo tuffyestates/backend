@@ -6,12 +6,19 @@ if (!process.env.SECRET)
 
 // eslint-disable-next-line no-global-assign
 require = require("esm")(module);
-const startServer = require('./src').default;
+const server = require('./src');
 (async () => {
     try {
-        startServer();
+        await server.start();
     } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Error initializing server:\n", e);
+        try {
+            await server.stop();
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error("Unable to stop server safely:\n", e);
+            process.exit(1);
+        }
     }
 })();

@@ -16,8 +16,8 @@ tags:
     description: "Everything about users"
   - name: properties
     description: "Everything about Properties"
-  - name: message
-    description: "Everything about message"
+  - name: messages
+    description: "Everything about messages"
 paths:
   /:
     get:
@@ -50,9 +50,11 @@ paths:
               properties:
                 username:
                   type: string
+                  example: gianni
                   description: Username for the user
                 password:
                   type: string
+                  example: ohphi8Ri
                   description: Password for the user
       responses:
         '201':
@@ -62,9 +64,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  sessionSecret:
+                  token:
                     type: string
-                    description: The session secret used to authenticate future requests
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                    description: The token used to authenticate future requests
         '400':
           $ref: "#/components/responses/BadRequest"
         '500':
@@ -87,23 +90,26 @@ paths:
               properties:
                 username:
                   type: string
+                  example: stephon
                   description: Username used to authenticate the user
                   minLength: 3
                 password:
                   type: string
+                  example: UCoow1pah
                   description: Password used to authenticate the user
                   minLength: 3
       responses:
         '200':
-          description: Session token authenticated
+          description: Token authenticated
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  sessionSecret:
+                  token:
                     type: string
-                    description: The session secret used to authenticate future requests
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                    description: The token used to authenticate future requests
         '400':
           $ref: "#/components/responses/BadRequest"
   /users/logout:
@@ -151,6 +157,7 @@ paths:
               properties:
                 address:
                   type: string
+                  example: 366 Oakwood Dr.
                   description: Listing's physical address
                 details:
                   type: object
@@ -158,12 +165,15 @@ paths:
                   properties:
                     price:
                       type: number
+                      example: 980000
                       description: Price of the listing in USD
                     size:
                       type: number
+                      example: 3800
                       description: Size of the listing in squarefeet
                     features:
                       type: array
+                      example: []
                       description: Features of the listing
                       items:
                         $ref: "#/components/schemas/Property/properties/details/properties/features"
@@ -183,6 +193,7 @@ paths:
           schema:
             type: integer
           required: true
+          example: 920f73b0-d67e-11e8-9f8b-f2801f1b9fd1
           description: Numeric ID of the user to get
       responses:
         200:
@@ -196,9 +207,9 @@ paths:
 
   # Message
 
-  /message:
+  /messages:
     post:
-      tags: [message]
+      tags: [messages]
       summary: create message
       operationId: createMessage
       requestBody:
@@ -228,11 +239,13 @@ components:
       properties:
         username:
           type: string
+          example: ironfox449
           x-mongoose-index: true
           x-mongoose-unique: true
           description: Username for the user
         password:
           type: string
+          example: fox_0f_iron3ss
           description: Password for the user
     Message:
       type: object
@@ -243,13 +256,16 @@ components:
       properties:
         text:
           type: string
+          example: "Hello!"
           description: Message contents
         author:
           type: string
+          example: 67677396-d648-11e8-9f8b-f2801f1b9fd1
           x-mongoose-type: ObjectId
           description: Id of user that authored the message
         recipient:
           type: string
+          example: 720fc17c-d648-11e8-9f8b-f2801f1b9fd1
           x-mongoose-type: ObjectId
           description: Id of user that received the message
     Property:
@@ -260,6 +276,7 @@ components:
       properties:
         address:
           type: string
+          example: 7266 South Golf Lane
           description: Property's physical address
         details:
           type: object
@@ -270,12 +287,15 @@ components:
           properties:
             price:
               type: number
+              example: 1640000
               description: Price of the property in USD
             size:
               type: number
+              example: 4710
               description: Size of the property in squarefeet
             features:
               type: array
+              example: ['office', 'pool', 'garage']
               description: Features of the property
               items:
                 type: string
@@ -295,6 +315,7 @@ components:
               error:
                 description: Human readable error message
                 type: string
+                example: This is an error message
     InternalError:
       description: Internal Server Error
       content:
@@ -305,3 +326,4 @@ components:
               error:
                 description: Human readable error message
                 type: string
+                example: This is an error message
