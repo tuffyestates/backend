@@ -206,21 +206,36 @@ paths:
           $ref: "#/components/responses/BadRequest"
 
   # Message
+  /me/messages/{conversation_id}:
+    get:
+      tags: [messages]
+      summary: get all messages in a conversation
+      operationId: getAllMessagesFromConversation
+      responses:
+        200:
+          description: All messages 
+          content: 
+            application/json:
+              schema:
+                $ref: ["#/components/schemas/Message"]
+        400:
+          $ref: "#/components/responses/BadRequest"
 
-  /messages:
+
+  /me/sendmessage:
     post:
       tags: [messages]
-      summary: create message
-      operationId: createMessage
+      summary: create and send a message
+      operationId: sendMessage
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: "#/components/schemas/Message"
       responses:
         201:
-          description: Create message
+          description: Message created and sent
         400:
           $ref: "#/components/responses/BadRequest"
 
@@ -251,8 +266,8 @@ components:
       type: object
       required:
         - text
-        - author
-        - recipient
+        - authorID
+        - recipientID
       properties:
         text:
           type: string
