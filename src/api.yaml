@@ -210,14 +210,22 @@ paths:
     get:
       tags: [messages]
       summary: get all messages in a conversation
-      operationId: getAllMessagesFromConversation
+      parameters:
+        - in: path
+          name: conversation_id
+          schema:
+            type: string
+          required: true
+          example: 920f73b0-d67e-11e8-9f8b-f2801f1b9fd1
+          description: String ID of the conversation
       responses:
         200:
           description: All messages 
           content: 
             application/json:
               schema:
-                $ref: ["#/components/schemas/Message"]
+                type: array
+                $ref: "#/components/schemas/Message"
         400:
           $ref: "#/components/responses/BadRequest"
 
