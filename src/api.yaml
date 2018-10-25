@@ -143,6 +143,8 @@ paths:
           description: Created property
         400:
           $ref: "#/components/responses/BadRequest"
+      security:
+        - BearerAuth: []
 
     patch:
       tags: [properties]
@@ -182,6 +184,8 @@ paths:
           description: Update Success
         400:
           $ref: "#/components/responses/BadRequest"
+      security:
+        - BearerAuth: []
 
   /properties/{id}:
     get:
@@ -223,6 +227,8 @@ paths:
           description: Create message
         400:
           $ref: "#/components/responses/BadRequest"
+      security:
+        - BearerAuth: []
 
 components:
   securitySchemes:
@@ -274,6 +280,11 @@ components:
         - address
         - details
       properties:
+        owner:
+          type: string
+          x-mongoose-type: ObjectId
+          example: d843a958-d7c0-11e8-9f8b-f2801f1b9fd1
+          description: Id of the owner of this property
         address:
           type: string
           example: 7266 South Golf Lane
