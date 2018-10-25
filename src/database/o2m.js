@@ -1,3 +1,4 @@
+const assert = require('assert');
 const mongoose = require('mongoose');
 
 function openSchema2Mongoose(oas) {
@@ -13,6 +14,7 @@ function openSchema2Mongoose(oas) {
 
     // Handle converting OAS required into mongoose required
     for (const property of oas.required || []) {
+        assert(properties[property], `Property does not exist: ${property}`);
         properties[property].required = true;
     }
 
