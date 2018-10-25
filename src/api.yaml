@@ -224,8 +224,8 @@ paths:
           description: String ID of the conversation
       responses:
         200:
-          description: All messages 
-          content: 
+          description: All messages
+          content:
             application/json:
               schema:
                 type: array
@@ -280,8 +280,8 @@ components:
       type: object
       required:
         - text
-        - authorID
-        - recipientID
+        - author
+        - recipient
       properties:
         text:
           type: string
