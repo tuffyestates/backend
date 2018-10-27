@@ -106,7 +106,6 @@ paths:
     head:
       tags: [users]
       summary: Deauthenticate a user
-      notes: This is a no-op
       operationId: logoutUser
       responses:
         200:
