@@ -19,6 +19,7 @@
   },
   "homepage": "https://gitlab.com/tuffyestates/backend#readme",
   "dependencies": {
+    "bcrypt": "^3.0.2",
     "chalk": "^2.4.1",
     "cors": "^2.8.4",
     "esm": "^3.0.84",

@@ -4,11 +4,11 @@ info:
   version: 0.1.0
   description: The is the backend specification.
 servers:
-  - url: 'http://localhost:11638/api'
+  - url: "http://localhost:11638/api"
     description: Local Development Server
-  - url: 'https://tuffyestates.sparling.us:11638/api'
+  - url: "https://tuffyestates.sparling.us:11638/api"
     description: Staging Server
-  - url: 'https://tuffyestates.sparling.us:11637/api'
+  - url: "https://tuffyestates.sparling.us:11637/api"
     description: Development Server
 tags:
   - name: meta
@@ -23,7 +23,7 @@ paths:
       summary: Request API specification file
       operationId: retrieveApiSpec
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/yaml:
@@ -52,7 +52,7 @@ paths:
                   type: string
                   description: Password for the user
       responses:
-        '201':
+        "201":
           description: User registered
           content:
             application/json:
@@ -62,7 +62,7 @@ paths:
                   sessionSecret:
                     type: string
                     description: The session secret used to authenticate future requests
-        '400':
+        "400":
           description: Bad request
           content:
             application/json:
@@ -72,7 +72,7 @@ paths:
                   error:
                     description: Human readable error message
                     type: string
-        '500':
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -107,7 +107,7 @@ paths:
                   description: Password used to authenticate the user
                   minLength: 3
       responses:
-        '200':
+        "200":
           description: Session token authenticated
           content:
             application/json:
@@ -117,7 +117,7 @@ paths:
                   sessionSecret:
                     type: string
                     description: The session secret used to authenticate future requests
-        '400':
+        "400":
           description: Bad request
           content:
             application/json:
@@ -127,7 +127,7 @@ paths:
                   error:
                     description: Human readable error message
                     type: string
-        '500':
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -145,9 +145,9 @@ paths:
       description: This is a no op request. Nothing is actually done on the server. Deauthentication is handled by the client removing its session token from it's request Authentication header.
       operationId: logoutUser
       responses:
-        '200':
+        "200":
           description: Session token revoked
-        '400':
+        "400":
           description: Bad request
           content:
             application/json:
@@ -157,7 +157,7 @@ paths:
                   error:
                     description: Human readable error message
                     type: string
-        '500':
+        "500":
           description: Internal Server Error
           content:
             application/json:
