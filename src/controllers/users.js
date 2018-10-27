@@ -6,6 +6,13 @@ import {
     generateSecret
 } from '../utils';
 
+function signToken(secret, id, permissions) {
+    return jwt.sign({
+        sub: id,
+        permissions: permissions
+    }, secret);
+}
+
 // Handle user registration
 async function register(req, res, next) {
     const database = await DB();
@@ -19,10 +26,7 @@ async function register(req, res, next) {
 
     // Generate a user JWT token, this token contains information on who they
     // are and what permissions they have
-    var token = jwt.sign({
-        sub: user.get('_id'),
-        permissions: ['user']
-    }, await generateSecret(req));
+    const token = signToken(await generateSecret(req), user.get('_id'), ['user']);
 
     Logger.trace(`User registered:`, req.body.username);
 
@@ -62,10 +66,7 @@ async function login(req, res, next) {
     // TODO: Check password
 
     // Generate users JWT token
-    const token = jwt.sign({
-        sub: user.get('_id'),
-        permissions: ['user']
-    }, await generateSecret(req));
+    const token = signToken(await generateSecret(req), user.get('_id'), ['user']);
 
     Logger.trace(`User authenticated:`, req.body.username);
 
