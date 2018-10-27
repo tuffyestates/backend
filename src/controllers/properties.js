@@ -27,7 +27,7 @@ async function get(req, res, next) {
 }
 async function post(req, res, next) {
     const database = await DB();
-    const property = new database.models.Property(req.payload);
+    const property = new database.models.Property(req.body);
 
     // Get newly created property's ID
     const id = property.get('_id');
