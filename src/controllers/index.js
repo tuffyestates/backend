@@ -14,5 +14,7 @@ export default {
         res.body = apiSpecFile;
         next();
     },
-    users: require('./users.js')
+    users: require('./users.js').default,
+    properties: require('./properties.js').default,
+    messages: require('./messages.js').default,
 }

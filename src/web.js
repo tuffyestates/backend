@@ -1,6 +1,7 @@
-import https from "https";
-import fs from "fs";
-import path from "path";
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
+import assert from 'assert';
 
 import express from "express";
 import multer from "multer";
@@ -79,30 +80,82 @@ export default function initWeb() {
       process.env.TE_STATIC_DIRECTORY || "/srv/tuffyestates/production",
       {
         fallthrough: false
-      }
-    )
-  );
+    }));
 
-  // All /api/* calls should be handled by this api router
-  const api = express.Router();
-  app.use("/api", api);
+    // All /api/* calls should be handled by this api router
+    const api = express.Router();
+    app.use('/api', api);
 
-  // Use a JWT middleware to validate a json web token containing authentication info
-  api.use((...args) => {
-    const req = args[0];
-    const next = args[args.length - 1];
-    try {
-      // Only apply security to pages the explicately request it in the API spec
-      for (const security of openApiDocument.paths[req.path][
-        req.method.toLowerCase()
-      ].security) {
-        // Handle JWT Bearer authentication
-        if (security.BearerAuth) {
-          return generateSecret(req).then(secret => {
-            return jwtExpress({
-              secret
-            }).apply(this, args);
-          });
+
+    // Use a JWT middleware to validate a json web token containing authentication info
+    api.use((...args) => {
+        const req = args[0];
+        const next = args[args.length - 1];
+        try {
+
+            // Only apply security to pages the explicately request it in the API spec
+            for (const security of openApiDocument.paths[req.path][req.method.toLowerCase()].security) {
+
+                // Handle JWT Bearer authentication
+                if (security.BearerAuth) {
+                    return generateSecret(req).then(secret => {
+                        return jwtExpress({
+                            secret
+                        }).apply(this, args);
+                    });
+                }
+            }
+            next();
+        } catch (e) {
+            next();
+        }
+    });
+
+
+    // Convert multipart/form-data into json and accept no files
+    api.use(formProcessor.none());
+
+    // Try to parse incoming requests to json if they are ['Content-Type': 'application/json']
+    api.use(express.json());
+
+    // Post process any objects formProcessor might have missed
+    api.use((req, res, next) => {
+        for (const idx in req.body) {
+            const field = req.body[idx];
+            if (field.startsWith('{') || field.startsWith('[')) {
+                try {
+                    req.body[idx] = JSON.parse(field)
+                } catch (e) {
+                    Logger.trace("Unable to parse possible field:", field);
+                }
+            }
+        }
+        next();
+    });
+
+    // Validate request with OpenAPI specification
+    api.use((...args) => validator.validate(args[0].method.toLowerCase(), args[0].path).apply(this, args));
+
+    // Process API specification to add paths and their methods
+    for (const [path, methods] of Object.entries(openApiDocument.paths)) {
+        // path examples: '/', '/users', '/users/login'
+
+        for (const method of Object.keys(methods)) {
+            // method examples: 'get', 'post', 'head'
+
+            // Replace '/' with '.', add method, remove all leading '.s
+            const controllerPath = (path.substr(1).replace(/\/\{.+?\}/g, '').replace(/\//g, '.') + `.${method}`).replace(/^\.+?/, '');
+
+            // Load controller
+            const controller = get(controllers, controllerPath);
+            assert(controller, `Did not receive valid controller for ${controllerPath}`);
+
+            // Apply method to api
+            api[method](path, asyncHandler(controller));
+            Logger.trace(`Registered method:`, {
+                path,
+                method
+            });
         }
       }
       next();
