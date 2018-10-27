@@ -237,15 +237,6 @@ export default function initWeb() {
         );
     }
 
-    // Login Form POST
-    app.post("/login", (req, res) => {});
-
-    // Logout User
-    app.get("/logout", (req, res) => {
-        req.logout();
-        //res.redirect('/users/login');
-    });
-
     appSingleton = app;
     return app;
 }
