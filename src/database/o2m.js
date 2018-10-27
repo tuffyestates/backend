@@ -1,3 +1,4 @@
+const assert = require('assert');
 const mongoose = require('mongoose');
 
 function openSchema2Mongoose(oas) {
