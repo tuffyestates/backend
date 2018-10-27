@@ -266,7 +266,13 @@ components:
       required:
         - address
         - details
+        - owner
       properties:
+        owner:
+          type: string
+          example: 720fc17cd64811e89f8bf2801f1b9fd1
+          x-mongoose-type: ObjectId
+          description: ID of the owner of the property
         address:
           type: string
           example: 7266 South Golf Lane
