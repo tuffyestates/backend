@@ -2,50 +2,95 @@ import jwt from 'jsonwebtoken';
 
 import DB from '../database';
 import Logger from '../logger';
-import {generateSecret} from '../utils';
+import {
+    generateSecret
+} from '../utils';
+
+function signToken(secret, id, permissions) {
+    return jwt.sign({
+        sub: id,
+        permissions: permissions
+    }, secret);
+}
+
+// Handle user registration
+async function register(req, res, next) {
+    const database = await DB();
+
+    // Create a database User from the data provided
+    let user = new database.models.User(req.body);
+    user.permissions = ['user', 'property'];
+
+    // Save the user to the database
+    await user.save();
+
+    // Generate a user JWT token, this token contains information on who they
+    // are and what permissions they have
+    const token = signToken(await generateSecret(req), user.get('_id'), ['user']);
+
+    Logger.trace(`User registered:`, req.body.username);
+
+    // Set created HTTP response code
+    res.status(201);
+
+    // Set response body to an object containing the token
+    res.body = {
+        token
+    };
+
+    next();
+}
+
+async function login(req, res, next) {
+    // Get access to the database
+    const database = await DB();
+
+    // Try to find the user using the username provided
+    const user = await database.models.User.findOne({
+        username: req.body.username
+    });
+
+    // If the user wasn't found, notify the client
+    if (!user) {
+
+        // Set "bad request" response code
+        res.status(400);
+        res.body = {
+            error: "User not found"
+        };
+
+        // Continue to next request handler
+        return next();
+    }
+
+    // TODO: Check password
+
+    // Generate users JWT token
+    const token = signToken(await generateSecret(req), user.get('_id'), ['user']);
+
+    Logger.trace(`User authenticated:`, req.body.username);
+
+    // Send the client their token
+    res.body = {
+        token
+    };
+
+    next();
+}
+
+// This function is a no-op (Deauthentication is handled client side - just deletes
+// its JWT token - server is stateless)
+async function logout(req, res, next) {
+    res.body = true;
+    next();
+}
 
 export default {
-    // Handle user registration
-    post: async function register(req, res, next) {
-        const database = await DB();
-
-        // Create a database User from the data provided
-        let user = new database.models.User(req.body);
-        user.permissions = ['user', 'property'];
-
-        // Save the user to the database
-        await user.save();
-        
-        var token = jwt.sign({
-            sub: 'mongodb-user-objectid',
-            permissions: ['user']
-        }, await generateSecret(req));
-
-        Logger.trace(`User registered:`, req.body.username);
-
-        res.status(201);
-        res.body = {token};
-
-        next();
-    },
+    post: register,
     login: {
-        post: async function login(req, res, next) {
-            var token = jwt.sign({
-                sub: 'mongodb-user-objectid',
-                permissions: ['user']
-            }, await generateSecret(req));
-
-            Logger.trace(`User authenticated:`, req.body.username);
-
-            res.body = {token};
-
-            next();
-        }
+        post: login
     },
     logout: {
-        head: async function logout(req, res, next) {
-            res.body = true;
-            next();
-        }
+        head: logout
     }
 }
