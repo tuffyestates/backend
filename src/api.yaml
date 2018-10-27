@@ -49,13 +49,9 @@ paths:
                 - password
               properties:
                 username:
-                  type: string
-                  example: gianni
-                  description: Username for the user
+                  $ref: '#/components/schemas/User/properties/username'
                 password:
-                  type: string
-                  example: ohphi8Ri
-                  description: Password for the user
+                  $ref: '#/components/schemas/User/properties/password'
       responses:
         '201':
           description: User registered
@@ -89,15 +85,9 @@ paths:
                 - password
               properties:
                 username:
-                  type: string
-                  example: stephon
-                  description: Username used to authenticate the user
-                  minLength: 3
+                  $ref: '#/components/schemas/User/properties/username'
                 password:
-                  type: string
-                  example: UCoow1pah
-                  description: Password used to authenticate the user
-                  minLength: 3
+                  $ref: '#/components/schemas/User/properties/password'
       responses:
         '200':
           description: Token authenticated
@@ -116,6 +106,7 @@ paths:
     head:
       tags: [users]
       summary: Deauthenticate a user
+      notes: This is a no-op
       operationId: logoutUser
       responses:
         200:
@@ -191,10 +182,10 @@ paths:
         - in: path
           name: id
           schema:
-            type: integer
+            type: string
           required: true
-          example: 920f73b0-d67e-11e8-9f8b-f2801f1b9fd1
-          description: Numeric ID of the user to get
+          example: 920f73b0d67e11e89f8bf2801f1b9fd1
+          description: UUID of the property to get
       responses:
         200:
           description: Success
@@ -243,10 +234,12 @@ components:
           x-mongoose-index: true
           x-mongoose-unique: true
           description: Username for the user
+          minLength: 3
         password:
           type: string
           example: fox_0f_iron3ss
           description: Password for the user
+          minLength: 3
     Message:
       type: object
       required:
@@ -260,14 +253,14 @@ components:
           description: Message contents
         author:
           type: string
-          example: 67677396-d648-11e8-9f8b-f2801f1b9fd1
+          example: 67677396d64811e89f8bf2801f1b9fd1
           x-mongoose-type: ObjectId
-          description: Id of user that authored the message
+          description: UUID of user that authored the message
         recipient:
           type: string
-          example: 720fc17c-d648-11e8-9f8b-f2801f1b9fd1
+          example: 720fc17cd64811e89f8bf2801f1b9fd1
           x-mongoose-type: ObjectId
-          description: Id of user that received the message
+          description: UUID of user that received the message
     Property:
       type: object
       required:

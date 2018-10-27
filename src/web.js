@@ -109,11 +109,27 @@ export default function initWeb() {
         }
     });
 
+
     // Convert multipart/form-data into json and accept no files
     api.use(formProcessor.none());
 
     // Try to parse incoming requests to json if they are ['Content-Type': 'application/json']
     api.use(express.json());
+
+    // Post process any objects formProcessor might have missed
+    api.use((req, res, next) => {
+        for (const idx in req.body) {
+            const field = req.body[idx];
+            if (field.startsWith('{') || field.startsWith('[')) {
+                try {
+                    req.body[idx] = JSON.parse(field)
+                } catch (e) {
+                    Logger.trace("Unable to parse possible field:", field);
+                }
+            }
+        }
+        next();
+    });
 
     // Validate request with OpenAPI specification
     api.use((...args) => validator.validate(args[0].method.toLowerCase(), args[0].path).apply(this, args));
