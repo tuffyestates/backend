@@ -15,6 +15,7 @@ export default {
         next();
     },
     users: require('./users.js').default,
+    property: require('./property.js').default,
     properties: require('./properties.js').default,
     messages: require('./messages.js').default,
 }

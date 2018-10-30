@@ -28,7 +28,7 @@ import {
 const openApiDocument = jsYaml.safeLoad(
     fs.readFileSync(path.join(__dirname, "api.yaml"), "utf-8")
 );
-const validator = new OpenApiValidator(openApiDocument);
+const validator = new OpenApiValidator(openApiDocument, {ajvOptions: { coerceTypes: true }});
 
 // This handles sending out error messages to the client
 // when there is an async error
@@ -136,9 +136,6 @@ export default function initWeb() {
         next();
     });
 
-    // Validate request with OpenAPI specification
-    api.use((...args) => validator.validate(args[0].method.toLowerCase(), args[0].path).apply(this, args));
-
     // Process API specification to add paths and their methods
     for (const [path, methods] of Object.entries(openApiDocument.paths)) {
         // path examples: '/', '/users', '/users/login'
@@ -147,66 +144,34 @@ export default function initWeb() {
             // method examples: 'get', 'post', 'head'
 
             // Replace '/' with '.', add method, remove all leading '.s
-            const controllerPath = (path.substr(1).replace(/\/\{.+?\}/g, '').replace(/\//g, '.') + `.${method}`).replace(/^\.+?/, '');
+            const controllerPath = (path.replace(/\/\{.+?\}/g, '').replace(/\//g, '.') + `.${method}`).replace(/^\.+/, '');
+            // Convert {parameter} to :parameter
+            const expressPath = path.replace(/\{(.*?)\}/g, ':$1');
 
             // Load controller
             const controller = get(controllers, controllerPath);
             assert(controller, `Did not receive valid controller for ${controllerPath}`);
 
             // Apply method to api
-            api[method](path, asyncHandler(controller));
-            Logger.trace(`Registered method:`, {
-                path,
-                method
-            });
-        }
-    }
-
-    // Convert multipart/form-data into json and accept no files
-    api.use(formProcessor.none());
-
-    // Try to parse incoming requests to json if they are ['Content-Type': 'application/json']
-    api.use(express.json());
-
-    // Validate request with OpenAPI specification
-    api.use((...args) =>
-        validator
-        .validate(args[0].method.toLowerCase(), args[0].path)
-        .apply(this, args)
-    );
-
-    // Process API specification to add paths and their methods
-    for (const [path, methods] of Object.entries(openApiDocument.paths)) {
-        // path examples: '/', '/users', '/users/login'
-
-        for (const method of Object.keys(methods)) {
-            // method examples: 'get', 'post', 'head'
-
-            // Replace '/' with '.', add method, remove all leading '.s
-            const controllerPath = `${path.replace(/\//g, ".")}.${method}`.replace(
-                /^\.+/,
-                ""
-            );
-
-            // Load controller
-            const controller = get(controllers, controllerPath);
-
-            // Apply method to api
-            api[method](path, asyncHandler(controller));
-            Logger.trace(`Registered method:`, {
-                path,
-                method
-            });
+            api[method](expressPath, validator.validate(method, path), asyncHandler(controller));
+            Logger.debug(`Registered method: ${method.toUpperCase()}    ${expressPath}    ${path}`);
         }
     }
 
     // Handle sending errors to clients
     api.use(errorHandler);
 
+    // API path not found (returns an error in JSON rather than the usual 404 page)
+    api.use(function api404(req, res, next) {
+        if (!res.body) {
+            res.status(404);
+            res.body = {error: "path not found"};
+        }
+        next();
+    });
+
     // Middleware to log all responses to the Logger
     app.use(function finalHandler(req, res, next) {
-        let statusCode = res.statusCode;
-
         if (res.body) {
             // If the body is json, send json and convert body to stringified json
             if (typeof res.body === "object") {
@@ -218,8 +183,10 @@ export default function initWeb() {
             if (typeof res.body !== "boolean") res.send(res.body);
             else res.send();
         } else {
-            statusCode = 404;
+            res.status(404);
         }
+
+        const statusCode = res.statusCode;
 
         // Some trace logging for every incomming request
         Logger.trace("-> |", statusCode, statusCodesToPhrases[statusCode]);

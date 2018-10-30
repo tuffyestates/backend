@@ -117,10 +117,10 @@ paths:
 
   # Properties
 
-  /properties:
+  /property:
     post:
       tags: [properties]
-      summary: create property
+      summary: Create a property
       operationId: createProperty
       requestBody:
         required: true
@@ -136,10 +136,41 @@ paths:
       security:
         - BearerAuth: []
 
+  /property/{id}:
+    get:
+      tags: [properties]
+      summary: Get a property by ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            pattern: "^[0-9a-f]{24}$"
+          required: true
+          example: 5bd3ddfdf20ff91132255496
+          description: UUID of the property to get
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+        400:
+          $ref: "#/components/responses/BadRequest"
     patch:
       tags: [properties]
-      summary: update property
+      summary: Update a property
       operationId: updateProperty
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            pattern: "^[0-9a-f]{24}$"
+          required: true
+          example: 5bd3ddfdf20ff91132255496
+          description: UUID of the property to get
       requestBody:
         required: true
         content:
@@ -176,26 +207,38 @@ paths:
           $ref: "#/components/responses/BadRequest"
       security:
         - BearerAuth: []
-
-  /properties/{id}:
+  /properties:
     get:
       tags: [properties]
-      summary: Get a property by ID
+      summary: Get an array of properties
       parameters:
-        - in: path
-          name: id
+        - in: query
+          name: offset
           schema:
-            type: string
-          required: true
-          example: 920f73b0d67e11e89f8bf2801f1b9fd1
-          description: UUID of the property to get
+            type: integer
+            minimum: 0
+            default: 0
+          example: 0
+          description: Offset your search results. Used for pagination.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          example: 10
+          description: Max number of results to return.
       responses:
         200:
           description: Success
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Property"
+                type: array
+                description: An array of properties
+                items:
+                  $ref: "#/components/schemas/Property"
         400:
           $ref: "#/components/responses/BadRequest"
 
@@ -237,12 +280,12 @@ components:
           description: Message contents
         author:
           type: string
-          example: 67677396d64811e89f8bf2801f1b9fd1
+          example: 5bd3ddfdf20ff91132255496
           x-mongoose-type: ObjectId
           description: UUID of user that authored the message
         recipient:
           type: string
-          example: 720fc17cd64811e89f8bf2801f1b9fd1
+          example: 5bd3ddfdf20ff91132255496
           x-mongoose-type: ObjectId
           description: UUID of user that received the message
     Property:
@@ -254,7 +297,7 @@ components:
       properties:
         owner:
           type: string
-          example: 720fc17cd64811e89f8bf2801f1b9fd1
+          example: 5bd3ddfdf20ff91132255496
           x-mongoose-type: ObjectId
           description: ID of the owner of the property
         address:

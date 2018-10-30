@@ -6,6 +6,11 @@ import {
     generateSecret
 } from '../utils';
 
+const TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+// Lets set secure cookies if the server is also running securely
+const SECURE = process.env.TE_SSL_CERT_PATH && process.env.TE_SSL_KEY_PATH;
+
 function signToken(secret, id, permissions) {
     return jwt.sign({
         sub: id,
@@ -27,6 +32,7 @@ async function register(req, res, next) {
     // Generate a user JWT token, this token contains information on who they
     // are and what permissions they have
     const token = signToken(await generateSecret(req), user.get('_id'), ['user']);
+    // res.cookie('token', token, {maxAge: TOKEN_MAX_AGE, httpOnly: true, secure: SECURE});
 
     Logger.trace(`User registered:`, req.body.username);
 
@@ -67,6 +73,7 @@ async function login(req, res, next) {
 
     // Generate users JWT token
     const token = signToken(await generateSecret(req), user.get('_id'), ['user']);
+    // res.cookie('token', token, {maxAge: TOKEN_MAX_AGE, httpOnly: true, secure: SECURE});
 
     Logger.trace(`User authenticated:`, req.body.username);
 

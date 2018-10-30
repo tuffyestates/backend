@@ -29,7 +29,7 @@ export default async function initDatabase(url) {
         for (const [name, schema] of Object.entries(o2m(openApiDocument))) {
             mongoose.model(name, schema);
             mongoose.models[name].ensureIndexes();
-            Logger.trace(`Created model for "${name}":`);
+            Logger.debug(`Created model for "${name}":`);
         }
     } catch (e) {
         mongoose.connection.close();
