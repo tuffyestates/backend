@@ -129,7 +129,7 @@ export default function initWeb() {
                 try {
                     req.body[idx] = JSON.parse(field)
                 } catch (e) {
-                    Logger.trace("Unable to parse possible field:", field);
+                    Logger.trace("Unable to parse possible field:", field, e);
                 }
             }
         }

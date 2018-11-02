@@ -330,6 +330,9 @@ components:
                   - garage
                   - fireplace
                   - pool
+            image:
+              type: string
+              format: binary
   responses:
     BadRequest:
       description: Bad request
