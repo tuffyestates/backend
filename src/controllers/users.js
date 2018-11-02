@@ -28,15 +28,13 @@ async function register(req, res, next) {
   // Create a database User from the data provided
   let user = new database.models.User(req.body);
   user.permissions = ["user", "property"];
+  
+  user.save();
 
     // Generate a user JWT token, this token contains information on who they
     // are and what permissions they have
     const token = signToken(await generateSecret(req), user.get('_id'), ['user']);
     // res.cookie('token', token, {maxAge: TOKEN_MAX_AGE, httpOnly: true, secure: SECURE});
-
-  // Generate a user JWT token, this token contains information on who they
-  // are and what permissions they have
-  const token = signToken(await generateSecret(req), user.get("_id"), ["user"]);
 
   Logger.trace(`User registered:`, req.body.username);
 
