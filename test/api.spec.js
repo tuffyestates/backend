@@ -3,7 +3,9 @@ const fs = require('fs');
 const SwaggerParser = require('swagger-parser');
 const yaml = require('js-yaml');
 
+/* eslint-disable no-console */
 (async () => {
+    console.log("Test started...");
     try {
         const spec = yaml.safeLoad(fs.readFileSync('./src/api.yaml'));
 
@@ -13,8 +15,8 @@ const yaml = require('js-yaml');
         //     noRefs: true
         // }));
     } catch (e) {
-        // eslint-disable-next-line no-console
         console.error('API Specifiation Error:', e.toString());
         process.exit(1);
     }
 })();
+/* eslint-enable no-console */
