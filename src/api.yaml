@@ -179,27 +179,19 @@ paths:
               type: object
               properties:
                 address:
-                  type: string
-                  example: 366 Oakwood Dr.
-                  description: Listing's physical address
+                  $ref: "#/components/schemas/Property/properties/address"
+                description:
+                  $ref: "#/components/schemas/Property/properties/description"
+                specification:
+                  type: object
+                  description: Data that describes properties of the property
+                  properties:
+                    $ref: "#/components/schemas/Property/properties/specification/properties"
                 details:
                   type: object
                   description: More details about a listing
                   properties:
-                    price:
-                      type: number
-                      example: 980000
-                      description: Price of the listing in USD
-                    size:
-                      type: number
-                      example: 3800
-                      description: Size of the listing in squarefeet
-                    features:
-                      type: array
-                      example: []
-                      description: Features of the listing
-                      items:
-                        $ref: "#/components/schemas/Property/properties/details/properties/features"
+                    $ref: "#/components/schemas/Property/properties/details/properties"
       responses:
         200:
           description: Update Success
@@ -292,6 +284,7 @@ components:
       type: object
       required:
         - address
+        - price
         - details
         - owner
       properties:
@@ -304,35 +297,57 @@ components:
           type: string
           example: 7266 South Golf Lane
           description: Property's physical address
-        details:
+        price:
+          type: number
+          example: 1640000
+          description: Price of the property in USD
+        description:
+          type: string
+          example: A lovely little house by the beach!
+          description: Description of the property
+        specification:
           type: object
-          description: More details about a property
+          description: Data that describes properties of the property
           required:
-            - price
+            - bedrooms
+            - bathrooms
             - size
           properties:
-            price:
+            lotSize:
               type: number
-              example: 1640000
-              description: Price of the property in USD
+              example: 23
+              min: 0
+              default: 0
+              description: Size of the property in acres
+            bedrooms:
+              type: number
+              min: 0
+              example: 3
+              description: Number of bedrooms
+            bathrooms:
+              type: number
+              min: 0
+              example: 2
+              description: Number of bathrooms
             size:
               type: number
               example: 4710
               description: Size of the property in squarefeet
-            features:
-              type: array
-              example: ['office', 'pool', 'garage']
-              description: Features of the property
-              items:
-                type: string
-                enum:
-                  - office
-                  - garage
-                  - fireplace
-                  - pool
-            image:
-              type: string
-              format: binary
+        features:
+          type: array
+          example: ['office', 'pool', 'garage']
+          description: Features of the property
+          default: []
+          items:
+            type: string
+            enum:
+              - office
+              - garage
+              - fireplace
+              - pool
+        image:
+          type: string
+          format: binary
   responses:
     BadRequest:
       description: Bad request
