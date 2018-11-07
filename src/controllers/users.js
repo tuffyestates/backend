@@ -30,7 +30,7 @@ async function register(req, res, next) {
     let user = new database.models.User(req.body);
     user.permissions = ["user", "property"];
 
-    user.save();
+    await user.save();
 
     // Generate a user JWT token, this token contains information on who they
     // are and what permissions they have
