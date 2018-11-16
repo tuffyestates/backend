@@ -102,6 +102,18 @@ paths:
                     description: The token used to authenticate future requests
         '400':
           $ref: "#/components/responses/BadRequest"
+  /users/status:
+    get:
+      tags: [users]
+      summary: Get the status of a user
+      operationId: userStatus
+      responses:
+        200:
+          description: Got user status
+        400:
+          $ref: "#/components/responses/BadRequest"
+      security:
+        - BearerAuth: []
   /users/logout:
     head:
       tags: [users]

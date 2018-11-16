@@ -15,6 +15,7 @@ import {
     statusCodesToPhrases
 } from "know-your-http-well";
 import cors from "cors";
+import cookieParser from 'cookie-parser';
 import get from "lodash.get";
 
 // Require global logger
@@ -24,11 +25,20 @@ import {
     generateSecret
 } from "./utils";
 
+const CORS_OPTIONS = {
+    origin: 'http://localhost:8080',
+    credentials: true
+};
+
 // Read OpenAPI specification and create request validator
 const openApiDocument = jsYaml.safeLoad(
     fs.readFileSync(path.join(__dirname, "api.yaml"), "utf-8")
 );
-const validator = new OpenApiValidator(openApiDocument, {ajvOptions: { coerceTypes: true }});
+const validator = new OpenApiValidator(openApiDocument, {
+    ajvOptions: {
+        coerceTypes: true
+    }
+});
 
 // This handles sending out error messages to the client
 // when there is an async error
@@ -54,6 +64,17 @@ function errorHandler(err, req, res, next) {
     next();
 }
 
+function getTokenFromCookieOrHeader(req) {
+    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+        return req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.token && req.cookies.token.split(' ')[0] === 'Bearer') {
+        return req.cookies.token.split(' ')[1];
+    } else if (req.query && req.query.token) {
+        return req.query.token;
+    }
+    return null;
+}
+
 // Setup API Router ------------------------------------------------------------
 
 let appSingleton = null;
@@ -75,13 +96,13 @@ export default function initWeb() {
     });
 
     // Browsers require cors to be enabled when making cross domain requests
-    app.use(cors());
+    app.use(cors(CORS_OPTIONS));
 
     // Serve static files
     app.use(
         "/static",
         express.static(
-            process.env.TE_STATIC_DIRECTORY || "/srv/tuffyestates/production", {
+            process.env.TE_STATIC_DIRECTORY, {
                 fallthrough: false
             }));
 
@@ -89,6 +110,8 @@ export default function initWeb() {
     const api = express.Router();
     app.use('/api', api);
 
+    // Parse incoming cookies
+    api.use(cookieParser());
 
     // Use a JWT middleware to validate a json web token containing authentication info
     api.use((...args) => {
@@ -103,7 +126,8 @@ export default function initWeb() {
                 if (security.BearerAuth) {
                     return generateSecret(req).then(secret => {
                         return jwtExpress({
-                            secret
+                            secret,
+                            getToken: getTokenFromCookieOrHeader
                         }).apply(this, args);
                     });
                 }
@@ -116,7 +140,7 @@ export default function initWeb() {
 
 
     // Convert multipart/form-data into json and accept no files
-    api.use(formProcessor.none());
+    api.use(formProcessor.fields([{name: 'image', max: 1}, {name: 'images', max: 12}]));
 
     // Try to parse incoming requests to json if they are ['Content-Type': 'application/json']
     api.use(express.json());
@@ -165,7 +189,9 @@ export default function initWeb() {
     api.use(function api404(req, res, next) {
         if (!res.body) {
             res.status(404);
-            res.body = {error: "path not found"};
+            res.body = {
+                error: "path not found"
+            };
         }
         next();
     });

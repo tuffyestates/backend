@@ -35,7 +35,7 @@ async function register(req, res, next) {
     // Generate a user JWT token, this token contains information on who they
     // are and what permissions they have
     const token = signToken(await generateSecret(req), user.get('_id'), ['user']);
-    // res.cookie('token', token, {maxAge: TOKEN_MAX_AGE, httpOnly: true, secure: SECURE});
+    res.cookie('token', `Bearer ${token}`, {maxAge: TOKEN_MAX_AGE, httpOnly: false, secure: SECURE, path: '/'});
 
     Logger.trace(`User registered:`, req.body.username);
 
@@ -45,6 +45,33 @@ async function register(req, res, next) {
     // Set response body to an object containing the token
     res.body = {
         token
+    };
+
+    next();
+}
+
+async function status(req, res, next) {
+    const database = await DB();
+
+    // Try to find the user using the _id provided
+    const user = await database.models.User.findOne({
+        _id: req.user.sub
+    });
+
+    // If the user wasn't found, notify the client
+    if (!user) {
+        // Set "bad request" response code
+        res.status(400);
+        res.body = {
+            error: "User not found"
+        };
+
+        // Continue to next request handler
+        return next();
+    }
+
+    res.body = {
+        username: user.get('username')
     };
 
     next();
@@ -83,7 +110,7 @@ async function login(req, res, next) {
 
     // Generate users JWT token
     const token = signToken(await generateSecret(req), user.get('_id'), ['user']);
-    // res.cookie('token', token, {maxAge: TOKEN_MAX_AGE, httpOnly: true, secure: SECURE});
+    res.cookie('token', `Bearer ${token}`, {maxAge: TOKEN_MAX_AGE, httpOnly: false, secure: SECURE, path: '/'});
 
     Logger.trace(`User authenticated:`, req.body.username);
 
@@ -95,15 +122,17 @@ async function login(req, res, next) {
     next();
 }
 
-// This function is a no-op (Deauthentication is handled client side - just deletes
-// its JWT token - server is stateless)
 async function logout(req, res, next) {
     res.body = true;
+    res.clearCookie('token', {maxAge: TOKEN_MAX_AGE, httpOnly: false, secure: SECURE, path: '/'});
     next();
 }
 
 export default {
     post: register,
+    status: {
+        get: status
+    },
     login: {
         post: login
     },
