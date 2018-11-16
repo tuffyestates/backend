@@ -1,3 +1,5 @@
+import sharp from 'sharp';
+
 // Initial setup
 process.title = `tuffy_estates_backend`;
 
@@ -28,3 +30,6 @@ export async function stop() {
         await db.disconnect();
     }
 }
+
+if (!sharp.simd())
+    Logger.warn('Current sharp installation is not using SIMD instructions!');
