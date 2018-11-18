@@ -28,7 +28,7 @@ deployment_staging:
     on_stop: stop_deployment_staging
   only:
     - master
-  script: npm start
+  script: npm run prod-start
 
 deployment_develop:
   stage: deploy
@@ -44,14 +44,14 @@ deployment_develop:
     on_stop: stop_deployment_develop
   only:
     - develop
-  script: npm start
+  script: npm run prod-start
 
 stop_deployment_staging:
   stage: deploy
   variables:
     GIT_STRATEGY: none
   script:
-    - npm stop
+    - npm run prod-stop
   when: manual
   environment:
     name: staging
@@ -64,7 +64,7 @@ stop_deployment_develop:
   variables:
     GIT_STRATEGY: none
   script:
-    - npm stop
+    - npm run prod-stop
   when: manual
   environment:
     name: develop

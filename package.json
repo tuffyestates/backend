@@ -7,9 +7,9 @@
     },
     "scripts": {
         "test": "node test",
-        "dev": "TE_STATIC_DIRECTORY=./temp nodemon index.js --ext yaml,js",
-        "start": "pm2 startOrGracefulReload ecosystem.config.js",
-        "stop": "pm2 stop ecosystem.config.js"
+        "start": "TE_STATIC_DIRECTORY=./temp nodemon index.js --ext yaml,js",
+        "prod-start": "pm2 startOrGracefulReload ecosystem.config.js",
+        "prod-stop": "pm2 stop ecosystem.config.js"
     },
     "repository": {
         "type": "git",
