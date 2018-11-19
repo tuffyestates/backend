@@ -336,11 +336,16 @@ components:
             - bedrooms
             - bathrooms
             - size
+            - lot
+            - built
           properties:
-            lotSize:
+            built:
+              type: number
+              example: 1999
+              description: Year the property was built
+            lot:
               type: number
               example: 23
-              default: 0
               description: Size of the property in acres
             bedrooms:
               type: number
