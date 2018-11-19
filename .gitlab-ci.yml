@@ -20,8 +20,11 @@ deployment_staging:
   variables:
     TE_SSL_CERT_PATH: '/etc/letsencrypt/live/tuffyestates.sparling.us/fullchain.pem'
     TE_SSL_KEY_PATH: '/etc/letsencrypt/live/tuffyestates.sparling.us/privkey.pem'
+    TE_PORT: '11638'
     TE_MONGODB_URL: 'mongodb://localhost:27017/tuffyestates_master'
+    TE_GOOGLE_API_KEY: "AIzaSyC9kZKp3JdNDWh_Q0UBf3h43nHrU4Mo6_4"
     TE_STATIC_DIRECTORY: '/srv/tuffyestates/staging'
+    TE_SECRET: "vU$Y/+[D;:<XraqlZ/q`!!!!_change_me_!!!!GEk,@xGY:K4(CMF,'|TSFZAAFM-As)"
   environment:
     name: staging
     url: https://tuffyestates.sparling.us:11638
@@ -37,7 +40,9 @@ deployment_develop:
     TE_SSL_KEY_PATH: '/etc/letsencrypt/live/tuffyestates.sparling.us/privkey.pem'
     TE_PORT: '11637'
     TE_MONGODB_URL: 'mongodb://localhost:27017/tuffyestates_develop'
+    TE_GOOGLE_API_KEY: "AIzaSyC9kZKp3JdNDWh_Q0UBf3h43nHrU4Mo6_4"
     TE_STATIC_DIRECTORY: '/srv/tuffyestates/develop'
+    TE_SECRET: "vU$Y/+[D;:<XraqlZ/q`!!!!_change_me_!!!!GEk,@xGY:K4(CMF,'|TSFZAAFM-As)"
   environment:
     name: develop
     url: https://tuffyestates.sparling.us:11637

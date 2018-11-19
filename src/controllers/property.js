@@ -7,6 +7,7 @@ import {
     flatten
 } from 'flat';
 import sharp from 'sharp';
+import axios from 'axios';
 
 import DB from '../database';
 import Logger from '../logger';
@@ -42,9 +43,35 @@ async function get(req, res, next) {
 async function post(req, res, next) {
     const database = await DB();
 
+    const geocode = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+        params: {
+            address: req.body.address,
+            key: process.env.TE_GOOGLE_API_KEY
+        }
+    });
+
+    Logger.debug(geocode.data)
+
+    // Check if geocoding request was a success
+    if (geocode.data.status !== 'OK' || geocode.data.results.length < 1) {
+        res.status(400);
+
+        // Set error message
+        res.body = {
+            error: geocode.data.error_message || `Invalid address`
+        };
+        return next();
+    }
+
+    const address = geocode.data.results[0].formatted_address;
+    const location = geocode.data.results[0].geometry.location;
+
     const property = new database.models.Property(Object.assign(req.body, {
-        owner: req.user.sub
+        owner: req.user.sub,
+        address,
+        location
     }));
+
 
     // Get newly created property's ID
     const id = property.get('_id');
@@ -52,6 +79,12 @@ async function post(req, res, next) {
 
     // Primary photo generation
     const imageOutputBuffer = await sharp(image.buffer)
+        .resize({
+            width: 4096,
+            height: 1000,
+            withoutEnlargement: true,
+            fit: 'cover'
+        })
         .jpeg()
         .toBuffer();
     const imagePath = Path.join(process.env.TE_STATIC_DIRECTORY, `property/image/${id}.jpg`);

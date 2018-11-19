@@ -7,7 +7,7 @@
     },
     "scripts": {
         "test": "node test",
-        "start": "TE_STATIC_DIRECTORY=./temp nodemon index.js --ext yaml,js",
+        "start": "nodemon index.js --ext yaml,js",
         "prod-start": "pm2 startOrGracefulReload ecosystem.config.js",
         "prod-stop": "pm2 stop ecosystem.config.js"
     },
@@ -22,10 +22,12 @@
     },
     "homepage": "https://gitlab.com/tuffyestates/backend#readme",
     "dependencies": {
+        "axios": "^0.18.0",
         "bcrypt": "^3.0.2",
         "chalk": "^2.4.1",
         "cookie-parser": "^1.4.3",
         "cors": "^2.8.4",
+        "dotenv": "^6.1.0",
         "esm": "^3.0.84",
         "express": "^4.16.3",
         "express-openapi-validate": "^0.4.3",

@@ -194,6 +194,10 @@ paths:
                   $ref: "#/components/schemas/Property/properties/address"
                 description:
                   $ref: "#/components/schemas/Property/properties/description"
+                location:
+                  type: object
+                  properties:
+                    $ref: "#/components/schemas/Property/properties/location/properties"
                 specification:
                   type: object
                   description: Data that describes properties of the property
@@ -312,6 +316,19 @@ components:
           type: string
           example: A lovely little house by the beach!
           description: Description of the property
+        location:
+          type: object
+          description: Geometric location
+          required:
+            - lat
+            - lng
+          properties:
+            lat:
+              type: number
+              description: latitude
+            lng:
+              type: number
+              description: longitude
         specification:
           type: object
           description: Data that describes properties of the property
