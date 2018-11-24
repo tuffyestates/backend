@@ -50,7 +50,21 @@ const asyncHandler = fn =>
 
 // If an error is caught while processing a request we will notify the user
 function errorHandler(err, req, res, next) {
-    const status = err.status || err.name === "ValidationError" ? 400 : 500;
+    const status = (err.status || err.name) === "ValidationError" ? 400 : 500;
+
+    if (err.name === 'UnauthorizedError') {
+        // An attempt was made with an invalid token, lets attempt to remove it
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.TE_SSL_CERT_PATH && process.env.TE_SSL_KEY_PATH,
+            path: '/'
+        });
+        res.clearCookie('has-token', {
+            httpOnly: false,
+            secure: process.env.TE_SSL_CERT_PATH && process.env.TE_SSL_KEY_PATH,
+            path: '/'
+        });
+    }
 
     // 500 (Internal Server Error) represents an error that shouldn't happen
     if (status === 500) {
@@ -140,7 +154,13 @@ export default function initWeb() {
 
 
     // Convert multipart/form-data into json and accept no files
-    api.use(formProcessor.fields([{name: 'image', max: 1}, {name: 'images', max: 12}]));
+    api.use(formProcessor.fields([{
+        name: 'image',
+        max: 1
+    }, {
+        name: 'images',
+        max: 12
+    }]));
 
     // Try to parse incoming requests to json if they are ['Content-Type': 'application/json']
     api.use(express.json());

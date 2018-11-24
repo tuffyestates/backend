@@ -6,8 +6,6 @@ import {
     generateSecret
 } from "../utils";
 
-const TOKEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-
 // Lets set secure cookies if the server is also running securely
 const SECURE = process.env.TE_SSL_CERT_PATH && process.env.TE_SSL_KEY_PATH;
 
@@ -35,7 +33,18 @@ async function register(req, res, next) {
     // Generate a user JWT token, this token contains information on who they
     // are and what permissions they have
     const token = signToken(await generateSecret(req), user.get('_id'), ['user']);
-    res.cookie('token', `Bearer ${token}`, {maxAge: TOKEN_MAX_AGE, httpOnly: false, secure: SECURE, path: '/'});
+    res.cookie('token', `Bearer ${token}`, {
+        maxAge: process.env.TE_TOKEN_MAX_AGE,
+        httpOnly: true,
+        secure: SECURE,
+        path: '/'
+    });
+    res.cookie('has-token', `1`, {
+        maxAge: process.env.TE_TOKEN_MAX_AGE,
+        httpOnly: false,
+        secure: SECURE,
+        path: '/'
+    });
 
     Logger.trace(`User registered:`, req.body.username);
 
@@ -110,7 +119,18 @@ async function login(req, res, next) {
 
     // Generate users JWT token
     const token = signToken(await generateSecret(req), user.get('_id'), ['user']);
-    res.cookie('token', `Bearer ${token}`, {maxAge: TOKEN_MAX_AGE, httpOnly: false, secure: SECURE, path: '/'});
+    res.cookie('token', `Bearer ${token}`, {
+        maxAge: process.env.TE_TOKEN_MAX_AGE,
+        httpOnly: true,
+        secure: SECURE,
+        path: '/'
+    });
+    res.cookie('has-token', `1`, {
+        maxAge: process.env.TE_TOKEN_MAX_AGE,
+        httpOnly: false,
+        secure: SECURE,
+        path: '/'
+    });
 
     Logger.trace(`User authenticated:`, req.body.username);
 
@@ -124,7 +144,16 @@ async function login(req, res, next) {
 
 async function logout(req, res, next) {
     res.body = true;
-    res.clearCookie('token', {maxAge: TOKEN_MAX_AGE, httpOnly: false, secure: SECURE, path: '/'});
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: SECURE,
+        path: '/'
+    });
+    res.clearCookie('has-token', {
+        httpOnly: false,
+        secure: SECURE,
+        path: '/'
+    });
     next();
 }
 
