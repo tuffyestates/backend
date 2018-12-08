@@ -24,7 +24,7 @@ const server = new Server({
 });
 server.onError = async function onError({res, error}) {
     res.body = {error: error.message};
-    Logger.warn(error);
+    Logger.warn(error.data.message || error.message);
 };
 
 const router = new Middleware.Router();

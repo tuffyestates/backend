@@ -5,6 +5,7 @@ import {HTTPError} from "ayyo";
 
 import DB from "../../../database";
 import Logger from "../../../logger";
+import {set} from "../../../utils";
 
 const _id = Joi.string()
     .hex()
@@ -75,13 +76,6 @@ schemas.property = Joi.object({
     })
 });
 
-const createPropertySchema = schemas.property.keys({
-    image: Joi.object({
-        filename: Joi.string(),
-        contents: Joi.binary()
-    })
-});
-
 // ////////////////////////////////////// HANDLERS
 
 const handlers = {};
@@ -90,9 +84,21 @@ handlers.get = async function({req, res}) {
     const database = await DB();
     Logger.trace("Properties options:", req.query);
 
+    let where = {};
+
+    // Apply filters to where
+    req.query['price-min'] && set(where, 'price|$gte', req.query['price-min'], '|');
+    req.query['price-max'] && set(where, 'price|$lte', req.query['price-max'], '|');
+    req.query['lot-min'] && set(where, 'specification.lot|$gte', req.query['lot-min'], '|');
+    req.query['lot-max'] && set(where, 'specification.lot|$lte', req.query['lot-max'], '|');
+    req.query['size-min'] && set(where, 'specification.size|$gte', req.query['size-min'], '|');
+    req.query['size-max'] && set(where, 'specification.size|$lte', req.query['size-max'], '|');
+    req.query['min-bedrooms'] && set(where, 'specification.bedrooms|$gte', req.query['min-bedrooms'], '|');
+    req.query['min-bathrooms'] && set(where, 'specification.bathrooms|$gte', req.query['min-bathrooms'], '|');
+
     // Try to find properties
     const properties = await database.models.property
-        .find({}, {__v: 0})
+        .find(where, {__v: 0})
         .skip(req.query.offset || 0)
         .limit(req.query.limit || 20);
 
@@ -171,7 +177,49 @@ export const routes = {
                             .max(100)
                             .default(20)
                             .example(10)
-                            .notes("Max number of results to return.")
+                            .notes("Max number of results to return."),
+                        "price-min": Joi.number()
+                            .integer()
+                            .min(0)
+                            .example(400000)
+                            .notes("Lowest price."),
+                        "price-max": Joi.number()
+                            .integer()
+                            .min(0)
+                            .example(800000)
+                            .notes("Highest price."),
+                        "lot-min": Joi.number()
+                            .integer()
+                            .min(0)
+                            .example(20)
+                            .notes("Lowest lot size."),
+                        "lot-max": Joi.number()
+                            .integer()
+                            .min(0)
+                            .example(40)
+                            .notes("Highest lot size."),
+                        "size-min": Joi.number()
+                            .integer()
+                            .min(0)
+                            .example(1700)
+                            .notes("Lowest squarefeet."),
+                        "size-max": Joi.number()
+                            .integer()
+                            .min(0)
+                            .example(4000)
+                            .notes("Highest squarefeet."),
+                        "min-bedrooms": Joi.number()
+                            .integer()
+                            .min(1)
+                            .max(4)
+                            .example(3)
+                            .notes("Minimum number of bedrooms."),
+                        "min-bathrooms": Joi.number()
+                            .integer()
+                            .min(1)
+                            .max(4)
+                            .example(2)
+                            .notes("Minimum number of bathrooms.")
                     })
                 },
                 produces: {
@@ -189,32 +237,22 @@ export const routes = {
     POST: {
         handler: handlers.get,
         openapi: {
-            description: "Get an array of properties",
+            description: "Create a property",
             operationId: "createProperty",
             tags: ["properties"],
+            security: [{JsonWebToken: []}],
             schema: {
                 consumes: {
-                    query: Joi.object({
-                        offset: Joi.number()
-                            .integer()
-                            .min(0)
-                            .default(0)
-                            .example(0)
-                            .notes(
-                                "Offset your search results. Used for pagination."
-                            ),
-                        limit: Joi.number()
-                            .integer()
-                            .min(1)
-                            .max(100)
-                            .default(20)
-                            .example(10)
-                            .notes("Max number of results to return.")
+                    body: schemas.property.keys({
+                        image: Joi.object({
+                            filename: Joi.string(),
+                            contents: Joi.binary()
+                        })
                     })
                 },
                 produces: {
-                    200: {
-                        body: Joi.array().items(schemas.property)
+                    201: {
+                        description: "Property created"
                     },
                     400: {
                         body: Joi.object()

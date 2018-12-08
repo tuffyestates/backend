@@ -111,7 +111,6 @@ handlers.status = async function({req, res}) {
     if (!user) {
         // Set "bad request" response code
         throw new HTTPError(400, "User not found");
-
     }
 
     res.body = {
@@ -190,7 +189,10 @@ export const routes = {
                 schema: {
                     produces: {
                         200: {
-                            description: "Got user status"
+                            description: "Got user status",
+                            body: Joi.object({
+                                username: Joi.string().required()
+                            })
                         }
                     }
                 }
