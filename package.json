@@ -6,7 +6,7 @@
         "node": ">=10.0.0"
     },
     "scripts": {
-        "test": "node test",
+        "test": "echo \"Error: no test specified\" exit 0",
         "start": "nodemon index.js --ext yaml,js",
         "prod-start": "pm2 startOrGracefulReload ecosystem.config.js",
         "prod-stop": "pm2 stop ecosystem.config.js"
