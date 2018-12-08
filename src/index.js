@@ -6,7 +6,7 @@ process.title = `tuffy_estates_backend`;
 // -----------------------------------------------------------------------------
 
 import Logger from './logger';
-import webServer from './web';
+import webServer from './web-ayyo';
 import database from './database';
 
 let db, web, app;
@@ -14,7 +14,8 @@ let db, web, app;
 export async function start() {
     db = await database(process.env.TE_MONGODB_URL);
     web = await webServer(db);
-    app = web.listen(process.env.TE_PORT, () => Logger.info(`Server listening on`, app.address()));
+    await web.listen(process.env.TE_PORT);
+    Logger.info(`Server listening on`, web.listener.address());
 }
 export async function stop() {
     if (app) {
