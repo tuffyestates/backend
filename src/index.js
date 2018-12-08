@@ -6,7 +6,7 @@ process.title = `tuffy_estates_backend`;
 // -----------------------------------------------------------------------------
 
 import Logger from './logger';
-import webServer from './web-ayyo';
+import webServer from './web';
 import database from './database';
 
 let db, web, app;

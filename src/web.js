@@ -1,255 +1,112 @@
-import https from 'https';
-import fs from 'fs';
-import path from 'path';
-import assert from 'assert';
+import assert from "assert";
 
-import express from "express";
-import multer from "multer";
-const formProcessor = multer();
-import {
-    OpenApiValidator
-} from "express-openapi-validate";
-import jsYaml from "js-yaml";
-import jwtExpress from "express-jwt";
-import {
-    statusCodesToPhrases
-} from "know-your-http-well";
-import cors from "cors";
-import cookieParser from 'cookie-parser';
-import get from "lodash.get";
+import {Server, Middleware} from "ayyo";
+import mongoose from "mongoose";
+const Joi = require("joi");
+const Joig = require("joigoose")(mongoose);
 
-// Require global logger
 import Logger from "./logger";
-import controllers from "./controllers";
-import {
-    generateSecret
-} from "./utils";
+import API from "./api";
+import DB from "./database";
+import {get, set} from "./utils";
 
 const CORS_OPTIONS = {
-    origin: 'http://localhost:8080',
+    origin: true,
     credentials: true
 };
 
-// Read OpenAPI specification and create request validator
-const openApiDocument = jsYaml.safeLoad(
-    fs.readFileSync(path.join(__dirname, "api.yaml"), "utf-8")
-);
-const validator = new OpenApiValidator(openApiDocument, {
-    ajvOptions: {
-        coerceTypes: true
-    }
+assert(process.env.TE_SSL_CERT_PATH);
+assert(process.env.TE_SSL_KEY_PATH);
+
+const server = new Server({
+    certPath: process.env.TE_SSL_CERT_PATH,
+    privKeyPath: process.env.TE_SSL_KEY_PATH
 });
+server.onError = async function onError({res, error}) {
+    res.body = {error: error.message};
+    Logger.trace(error);
+    Logger.warn(error.data.message || error.message);
+};
 
-// This handles sending out error messages to the client
-// when there is an async error
-const asyncHandler = fn =>
-    function asyncUtilWrap(req, res, next) {
-        const fnReturn = fn.apply(this, arguments);
-        return Promise.resolve(fnReturn).catch(next);
-    };
-
-// If an error is caught while processing a request we will notify the user
-function errorHandler(err, req, res, next) {
-    const status = (err.status || err.name) === "ValidationError" ? 400 : 500;
-
-    if (err.name === 'UnauthorizedError') {
-        // An attempt was made with an invalid token, lets attempt to remove it
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: process.env.TE_SSL_CERT_PATH && process.env.TE_SSL_KEY_PATH,
-            path: '/'
-        });
-        res.clearCookie('has-token', {
-            httpOnly: false,
-            secure: process.env.TE_SSL_CERT_PATH && process.env.TE_SSL_KEY_PATH,
-            path: '/'
-        });
-    }
-
-    // 500 (Internal Server Error) represents an error that shouldn't happen
-    if (status === 500) {
-        Logger.error(err.message);
-    }
-    Logger.trace(err);
-    res.status(status);
-    res.body = {
-        error: err.toString()
-    };
-    next();
-}
-
-function getTokenFromCookieOrHeader(req) {
-    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-        return req.headers.authorization.split(' ')[1];
-    } else if (req.cookies.token && req.cookies.token.split(' ')[0] === 'Bearer') {
-        return req.cookies.token.split(' ')[1];
-    } else if (req.query && req.query.token) {
-        return req.query.token;
-    }
-    return null;
-}
-
-// Setup API Router ------------------------------------------------------------
-
-let appSingleton = null;
-
-export default function initWeb() {
-    if (appSingleton) {
-        return appSingleton;
-    }
-
-    // Create express app and create api path handler
-    let app = express();
-
-    // Middleware to log all requests to the Logger
-    app.use(function initialHandler(req, res, next) {
-        // Some trace logging for every incomming request
-        Logger.trace("<- |", req.method, req.url, req.path);
-
-        next();
-    });
-
-    // Browsers require cors to be enabled when making cross domain requests
-    app.use(cors(CORS_OPTIONS));
-
-    // Serve static files
-    app.use(
-        "/static",
-        express.static(
-            process.env.TE_STATIC_DIRECTORY, {
-                fallthrough: false
-            }));
-
-    // All /api/* calls should be handled by this api router
-    const api = express.Router();
-    app.use('/api', api);
-
-    // Parse incoming cookies
-    api.use(cookieParser());
-
-    // Use a JWT middleware to validate a json web token containing authentication info
-    api.use((...args) => {
-        const req = args[0];
-        const next = args[args.length - 1];
-        try {
-
-            // Only apply security to pages the explicately request it in the API spec
-            for (const security of openApiDocument.paths[req.path][req.method.toLowerCase()].security) {
-
-                // Handle JWT Bearer authentication
-                if (security.BearerAuth) {
-                    return generateSecret(req).then(secret => {
-                        return jwtExpress({
-                            secret,
-                            getToken: getTokenFromCookieOrHeader
-                        }).apply(this, args);
-                    });
-                }
-            }
-            next();
-        } catch (e) {
-            next();
-        }
-    });
+const router = new Middleware.Router();
+const api = new Middleware.Router({path: "/api"});
+const jwt = new Middleware.JsonWebToken({secret: process.env.TE_SECRET});
 
 
-    // Convert multipart/form-data into json and accept no files
-    api.use(formProcessor.fields([{
-        name: 'image',
-        max: 1
-    }, {
-        name: 'images',
-        max: 12
-    }]));
+async function addRoute(openapi, db, config, pathSegments = []) {
+    assert(typeof config !== "undefined");
 
-    // Try to parse incoming requests to json if they are ['Content-Type': 'application/json']
-    api.use(express.json());
+    // Check if this is a route config
+    if (typeof config.handler === "function") {
+        config.method = pathSegments.pop();
+        config.path = "/" + pathSegments.join("/");
 
-    // Post process any objects formProcessor might have missed
-    api.use((req, res, next) => {
-        for (const idx in req.body) {
-            const field = req.body[idx];
-            if (field.startsWith('{') || field.startsWith('[')) {
-                try {
-                    req.body[idx] = JSON.parse(field)
-                } catch (e) {
-                    Logger.trace("Unable to parse possible field:", field, e);
-                }
-            }
-        }
-        next();
-    });
-
-    // Process API specification to add paths and their methods
-    for (const [path, methods] of Object.entries(openApiDocument.paths)) {
-        // path examples: '/', '/users', '/users/login'
-
-        for (const method of Object.keys(methods)) {
-            // method examples: 'get', 'post', 'head'
-
-            // Replace '/' with '.', add method, remove all leading '.s
-            const controllerPath = (path.replace(/\/\{.+?\}/g, '').replace(/\//g, '.') + `.${method}`).replace(/^\.+/, '');
-            // Convert {parameter} to :parameter
-            const expressPath = path.replace(/\{(.*?)\}/g, ':$1');
-
-            // Load controller
-            const controller = get(controllers, controllerPath);
-            assert(controller, `Did not receive valid controller for ${controllerPath}`);
-
-            // Apply method to api
-            api[method](expressPath, validator.validate(method, path), asyncHandler(controller));
-            Logger.debug(`Registered method: ${method.toUpperCase()}    ${expressPath}    ${path}`);
-        }
-    }
-
-    // Handle sending errors to clients
-    api.use(errorHandler);
-
-    // API path not found (returns an error in JSON rather than the usual 404 page)
-    api.use(function api404(req, res, next) {
-        if (!res.body) {
-            res.status(404);
-            res.body = {
-                error: "path not found"
-            };
-        }
-        next();
-    });
-
-    // Middleware to log all responses to the Logger
-    app.use(function finalHandler(req, res, next) {
-        if (res.body) {
-            // If the body is json, send json and convert body to stringified json
-            if (typeof res.body === "object") {
-                res.type("application/json");
-                res.body = JSON.stringify(res.body);
-            }
-
-            // Send body
-            if (typeof res.body !== "boolean") res.send(res.body);
-            else res.send();
-        } else {
-            res.status(404);
+        // Set JWT security middleware
+        if (get(config, "openapi.security")) {
+            config.chain = [jwt];
+            set(config, "openapi.schema.produces.401", {
+                body: Joi.object({
+                    error: Joi.string().required()
+                })
+            });
         }
 
-        const statusCode = res.statusCode;
+        // Add multipart/form-data contenttype on request body
+        if (get(config, "openapi.schema.consumes"))
+            config.openapi.schema.consumes.contentTypes = [
+                "multipart/form-data"
+            ];
 
-        // Some trace logging for every incomming request
-        Logger.trace("-> |", statusCode, statusCodesToPhrases[statusCode]);
 
-        next();
-    });
+        for (const response of Object.values(get(config, "openapi.schema.produces"))) {
+            response.contentType = "application/json";
+        }
 
-    if (process.env.TE_SSL_CERT_PATH && process.env.TE_SSL_KEY_PATH) {
-        Logger.info("Using SSL!");
-        app = https.createServer({
-                cert: fs.readFileSync(process.env.TE_SSL_CERT_PATH),
-                key: fs.readFileSync(process.env.TE_SSL_KEY_PATH)
-            },
-            app
+        openapi.use(new Middleware.Route(config));
+        Logger.trace(
+            `Added route "${config.method} ${openapi.path}${config.path}" to web server.`
         );
+
+    } else {
+        // It is an object, lets traverse it
+        for (const [name, schema] of Object.entries(config.schemas || {})) {
+            const mongoSchemaFormat = Joig.convert(schema);
+            const mongoSchema = new mongoose.Schema(mongoSchemaFormat);
+            mongoSchema.path('_id').get(objectid => objectid ? objectid.id.toString("hex") : objectid);
+            db.model(name, mongoSchema);
+            Logger.trace(`Added schema to database for ${name}.`);
+        }
+        for (const [path, newConfig] of Object.entries(config.routes || {})) {
+            await addRoute(openapi, db, newConfig, [
+                ...pathSegments,
+                ...path.split("/")
+            ]);
+        }
+    }
+}
+
+export default async function initWeb() {
+    await server.use(new Middleware.Cors(CORS_OPTIONS));
+    await router.use(
+        new Middleware.Static({
+            path: "/static",
+            directory: process.env.TE_STATIC_DIRECTORY
+        })
+    );
+    await router.use(api);
+
+    const db = await DB();
+
+    for (const [apiVersion, config] of Object.entries(API)) {
+        Logger.trace(`Processing api ${apiVersion}...`);
+        const openapi = new Middleware.OpenApi({
+            path: `/${apiVersion}`,
+            doc: config.doc
+        });
+        await api.use(openapi);
+        await addRoute(openapi, db, config);
     }
 
-    appSingleton = app;
-    return app;
+    await server.use(router);
+    return server;
 }
