@@ -37,7 +37,7 @@ handlers.register = async function({req, res}) {
         `token=${token}; Path=/; Secure; HttpOnly; Max-Age=${
             process.env.TE_TOKEN_MAX_AGE
         }`,
-        `has-token=1; Path=/; Secure; Max-Age=${process.env.TE_TOKEN_MAX_AGE}`
+        `has-token=1; Path=/; Max-Age=${process.env.TE_TOKEN_MAX_AGE}`
     ];
 
     Logger.trace(`User registered:`, req.body.username);
@@ -80,7 +80,7 @@ handlers.login = async function({req, res}) {
         `token=${token}; Path=/; Secure; HttpOnly; Max-Age=${
             process.env.TE_TOKEN_MAX_AGE
         }`,
-        `has-token=1; Path=/; Secure; Max-Age=${process.env.TE_TOKEN_MAX_AGE}`
+        `has-token=1; Path=/; Max-Age=${process.env.TE_TOKEN_MAX_AGE}`
     ];
 
     Logger.trace(`User authenticated:`, req.body.username);
@@ -94,10 +94,10 @@ handlers.logout = async function({req, res}) {
     // Clear token cookies on client
     res.headers[HTTP2_HEADER_SET_COOKIE] = [
         `token=""; Path=/; Secure; HttpOnly; Max-Age=0`,
-        `has-token=0; Path=/; Secure; Max-Age=0`
+        `has-token=0; Path=/; Max-Age=0`
     ];
 
-    Logger.trace(`User deauthenticated:`, req.body.username);
+    Logger.trace(`User deauthenticated:`, req.jwt.sub);
 };
 handlers.status = async function({req, res}) {
     const database = await DB();

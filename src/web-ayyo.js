@@ -24,6 +24,7 @@ const server = new Server({
 });
 server.onError = async function onError({res, error}) {
     res.body = {error: error.message};
+    Logger.trace(error);
     Logger.warn(error.data.message || error.message);
 };
 
@@ -63,14 +64,16 @@ async function addRoute(openapi, db, config, pathSegments = []) {
 
         openapi.use(new Middleware.Route(config));
         Logger.trace(
-            `Added route "${openapi.path}${config.path}" to web server.`
+            `Added route "${config.method} ${openapi.path}${config.path}" to web server.`
         );
 
     } else {
         // It is an object, lets traverse it
         for (const [name, schema] of Object.entries(config.schemas || {})) {
-            const mongoSchema = Joig.convert(schema);
-            db.model(name, new mongoose.Schema(mongoSchema));
+            const mongoSchemaFormat = Joig.convert(schema);
+            const mongoSchema = new mongoose.Schema(mongoSchemaFormat);
+            mongoSchema.path('_id').get(objectid => objectid ? objectid.id.toString("hex") : objectid);
+            db.model(name, mongoSchema);
             Logger.trace(`Added schema to database for ${name}.`);
         }
         for (const [path, newConfig] of Object.entries(config.routes || {})) {

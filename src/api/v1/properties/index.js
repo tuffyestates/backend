@@ -1,12 +1,17 @@
 import http2 from "http2";
+import Path from "path";
+import fs from "fs";
 
 import Joi from "joi";
+import sharp from 'sharp';
+import axios from 'axios';
 import {HTTPError} from "ayyo";
 
 import DB from "../../../database";
 import Logger from "../../../logger";
 import {set} from "../../../utils";
 
+const fsp = fs.promises;
 const _id = Joi.string()
     .hex()
     .length(24)
@@ -14,8 +19,6 @@ const _id = Joi.string()
 
 export const schemas = {};
 schemas.property = Joi.object({
-    _id: _id
-    .meta({type: "ObjectId", ref: "property"}),
     owner: _id
         .meta({type: "ObjectId", ref: "user"})
         .notes("ID of the owner of the property"),
@@ -127,6 +130,70 @@ handlers.getById = async function({req, res}) {
     // Return the property
     res.body = property.toObject({getters: true, virtuals: false});
 };
+handlers.create = async function({req, res}) {
+    const database = await DB();
+
+    const geocode = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
+        params: {
+            address: req.body.address,
+            key: process.env.TE_GOOGLE_API_KEY
+        }
+    });
+
+    Logger.debug("Got property address:", geocode.data);
+
+    // Check if geocoding request was a success
+    if (geocode.data.status !== 'OK' || geocode.data.results.length < 1) {
+        throw new HTTPError(400, "Invalid property address");
+    }
+
+    const address = geocode.data.results[0].formatted_address;
+    const location = geocode.data.results[0].geometry.location;
+
+    const property = new database.models.property(Object.assign(req.body, {
+        owner: req.jwt.sub,
+        address,
+        location
+    }));
+
+
+    // Get newly created property's ID
+    const id = property.get('_id');
+    const imageBuffer = req.body.image.content;
+
+    // Primary photo generation
+    const imageOutputBuffer = await sharp(imageBuffer)
+        .resize({
+            width: 3840,
+            height: 1080,
+            withoutEnlargement: true,
+            fit: 'cover'
+        })
+        .jpeg()
+        .toBuffer();
+    const imagePath = Path.join(process.env.TE_STATIC_DIRECTORY, `property/image/${id}.jpg`);
+    await fsp.writeFile(imagePath, imageOutputBuffer);
+
+    // thumbnail generation
+    const imageThumbnailBuffer = await sharp(imageBuffer)
+        .resize(80)
+        .jpeg({
+            quality: 30
+        })
+        .toBuffer();
+    const thumbnailPath = Path.join(process.env.TE_STATIC_DIRECTORY, `property/image/${id}-thumbnail.jpg`);
+    await fsp.writeFile(thumbnailPath, imageThumbnailBuffer);
+
+    Logger.trace(`Created property with id: ${id}`);
+
+    // Save property to database
+    await property.save();
+
+    // Send back the created property's ID
+    res.body = {
+        id
+    };
+};
 
 // /////////////////////////////////////////////// ROUTES
 
@@ -149,7 +216,7 @@ export const routes = {
                             _id: _id.meta({type: "ObjectId", ref: "property"})
                         })
                     },
-                    400: {}
+                    400: Joi.object()
                 }
             }
         }
@@ -235,7 +302,7 @@ export const routes = {
         }
     },
     POST: {
-        handler: handlers.get,
+        handler: handlers.create,
         openapi: {
             description: "Create a property",
             operationId: "createProperty",
@@ -246,13 +313,16 @@ export const routes = {
                     body: schemas.property.keys({
                         image: Joi.object({
                             filename: Joi.string(),
-                            contents: Joi.binary()
+                            content: Joi.binary()
                         })
                     })
                 },
                 produces: {
                     201: {
-                        description: "Property created"
+                        description: "Property created",
+                        body: Joi.object({
+                            _id: _id.meta({type: "ObjectId", ref: "property"}).notes("Newly created property's ID")
+                        })
                     },
                     400: {
                         body: Joi.object()
