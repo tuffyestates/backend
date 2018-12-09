@@ -3,8 +3,8 @@ import Path from "path";
 import fs from "fs";
 
 import Joi from "joi";
-import sharp from 'sharp';
-import axios from 'axios';
+import sharp from "sharp";
+import axios from "axios";
 import {HTTPError} from "ayyo";
 
 import DB from "../../../database";
@@ -90,14 +90,32 @@ handlers.get = async function({req, res}) {
     let where = {};
 
     // Apply filters to where
-    req.query['price-min'] && set(where, 'price|$gte', req.query['price-min'], '|');
-    req.query['price-max'] && set(where, 'price|$lte', req.query['price-max'], '|');
-    req.query['lot-min'] && set(where, 'specification.lot|$gte', req.query['lot-min'], '|');
-    req.query['lot-max'] && set(where, 'specification.lot|$lte', req.query['lot-max'], '|');
-    req.query['size-min'] && set(where, 'specification.size|$gte', req.query['size-min'], '|');
-    req.query['size-max'] && set(where, 'specification.size|$lte', req.query['size-max'], '|');
-    req.query['min-bedrooms'] && set(where, 'specification.bedrooms|$gte', req.query['min-bedrooms'], '|');
-    req.query['min-bathrooms'] && set(where, 'specification.bathrooms|$gte', req.query['min-bathrooms'], '|');
+    req.query["price-min"] &&
+        set(where, "price|$gte", req.query["price-min"], "|");
+    req.query["price-max"] &&
+        set(where, "price|$lte", req.query["price-max"], "|");
+    req.query["lot-min"] &&
+        set(where, "specification.lot|$gte", req.query["lot-min"], "|");
+    req.query["lot-max"] &&
+        set(where, "specification.lot|$lte", req.query["lot-max"], "|");
+    req.query["size-min"] &&
+        set(where, "specification.size|$gte", req.query["size-min"], "|");
+    req.query["size-max"] &&
+        set(where, "specification.size|$lte", req.query["size-max"], "|");
+    req.query["min-bedrooms"] &&
+        set(
+            where,
+            "specification.bedrooms|$gte",
+            req.query["min-bedrooms"],
+            "|"
+        );
+    req.query["min-bathrooms"] &&
+        set(
+            where,
+            "specification.bathrooms|$gte",
+            req.query["min-bathrooms"],
+            "|"
+        );
 
     // Try to find properties
     const properties = await database.models.property
@@ -106,9 +124,9 @@ handlers.get = async function({req, res}) {
         .limit(req.query.limit || 20);
 
     // Return the properties to client
-    // FIXME: OMG this is a horrible hack to fix ObjectIds not returning as
-    // strings
-    res.body = properties.map(p => p.toObject({getters: true, virtuals: false}));
+    res.body = properties.map(p =>
+        p.toObject({getters: true, virtuals: false})
+    );
 };
 handlers.getById = async function({req, res}) {
     // Get database
@@ -133,56 +151,91 @@ handlers.getById = async function({req, res}) {
 handlers.create = async function({req, res}) {
     const database = await DB();
 
-    const geocode = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
-        params: {
-            address: req.body.address,
-            key: process.env.TE_GOOGLE_API_KEY
+    const geocode = await axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json`,
+        {
+            params: {
+                address: req.body.address,
+                key: process.env.TE_GOOGLE_API_KEY
+            }
         }
-    });
+    );
 
     Logger.debug("Got property address:", geocode.data);
 
     // Check if geocoding request was a success
-    if (geocode.data.status !== 'OK' || geocode.data.results.length < 1) {
+    if (geocode.data.status !== "OK" || geocode.data.results.length < 1) {
         throw new HTTPError(400, "Invalid property address");
     }
 
     const address = geocode.data.results[0].formatted_address;
     const location = geocode.data.results[0].geometry.location;
 
-    const property = new database.models.property(Object.assign(req.body, {
-        owner: req.jwt.sub,
-        address,
-        location
-    }));
-
+    const property = new database.models.property(
+        Object.assign(req.body, {
+            owner: req.jwt.sub,
+            address,
+            location
+        })
+    );
 
     // Get newly created property's ID
-    const id = property.get('_id');
+    const id = property.get("_id");
     const imageBuffer = req.body.image.content;
 
-    // Primary photo generation
-    const imageOutputBuffer = await sharp(imageBuffer)
-        .resize({
-            width: 3840,
-            height: 1080,
-            withoutEnlargement: true,
-            fit: 'cover'
-        })
-        .jpeg()
-        .toBuffer();
-    const imagePath = Path.join(process.env.TE_STATIC_DIRECTORY, `property/image/${id}.jpg`);
-    await fsp.writeFile(imagePath, imageOutputBuffer);
+    const [
+        imageOutputBuffer,
+        smallerImageOutputBuffer,
+        imageThumbnailBuffer
+    ] = await Promise.all([
+        // Primary photo generation
+        sharp(imageBuffer)
+            .resize({
+                width: 3840,
+                height: 1080,
+                withoutEnlargement: true,
+                fit: "cover"
+            })
+            .jpeg()
+            .toBuffer(),
+        // Smaller photo generation
+        sharp(imageBuffer)
+            .resize({
+                width: 500,
+                height: 282,
+                withoutEnlargement: true,
+                fit: "cover"
+            })
+            .jpeg()
+            .toBuffer(),
+        // thumbnail generation
+        sharp(imageBuffer)
+            .resize(80)
+            .jpeg({
+                quality: 30
+            })
+            .toBuffer()
+    ]);
+    const imagePath = Path.join(
+        process.env.TE_STATIC_DIRECTORY,
+        `property/image/${id}.jpg`
+    );
 
-    // thumbnail generation
-    const imageThumbnailBuffer = await sharp(imageBuffer)
-        .resize(80)
-        .jpeg({
-            quality: 30
-        })
-        .toBuffer();
-    const thumbnailPath = Path.join(process.env.TE_STATIC_DIRECTORY, `property/image/${id}-thumbnail.jpg`);
-    await fsp.writeFile(thumbnailPath, imageThumbnailBuffer);
+    const smallerImagePath = Path.join(
+        process.env.TE_STATIC_DIRECTORY,
+        `property/image/${id}-500.jpg`
+    );
+
+    const thumbnailPath = Path.join(
+        process.env.TE_STATIC_DIRECTORY,
+        `property/image/${id}-80.jpg`
+    );
+
+    await Promise.all([
+        fsp.writeFile(imagePath, imageOutputBuffer),
+        fsp.writeFile(smallerImagePath, smallerImageOutputBuffer),
+        fsp.writeFile(thumbnailPath, imageThumbnailBuffer)
+    ]);
 
     Logger.trace(`Created property with id: ${id}`);
 
@@ -293,7 +346,10 @@ export const routes = {
                     200: {
                         body: Joi.array().items(
                             schemas.property.keys({
-                                _id: _id.meta({type: "ObjectId", ref: "property"})
+                                _id: _id.meta({
+                                    type: "ObjectId",
+                                    ref: "property"
+                                })
                             })
                         )
                     }
@@ -321,7 +377,9 @@ export const routes = {
                     201: {
                         description: "Property created",
                         body: Joi.object({
-                            _id: _id.meta({type: "ObjectId", ref: "property"}).notes("Newly created property's ID")
+                            _id: _id
+                                .meta({type: "ObjectId", ref: "property"})
+                                .notes("Newly created property's ID")
                         })
                     },
                     400: {
