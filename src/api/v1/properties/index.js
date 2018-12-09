@@ -1,4 +1,3 @@
-import http2 from "http2";
 import Path from "path";
 import fs from "fs";
 
@@ -183,59 +182,7 @@ handlers.create = async function({req, res}) {
     const id = property.get("_id");
     const imageBuffer = req.body.image.content;
 
-    const [
-        imageOutputBuffer,
-        smallerImageOutputBuffer,
-        imageThumbnailBuffer
-    ] = await Promise.all([
-        // Primary photo generation
-        sharp(imageBuffer)
-            .resize({
-                width: 3840,
-                height: 1080,
-                withoutEnlargement: true,
-                fit: "cover"
-            })
-            .jpeg()
-            .toBuffer(),
-        // Smaller photo generation
-        sharp(imageBuffer)
-            .resize({
-                width: 500,
-                height: 282,
-                withoutEnlargement: true,
-                fit: "cover"
-            })
-            .jpeg()
-            .toBuffer(),
-        // thumbnail generation
-        sharp(imageBuffer)
-            .resize(80)
-            .jpeg({
-                quality: 30
-            })
-            .toBuffer()
-    ]);
-    const imagePath = Path.join(
-        process.env.TE_STATIC_DIRECTORY,
-        `property/image/${id}.jpg`
-    );
-
-    const smallerImagePath = Path.join(
-        process.env.TE_STATIC_DIRECTORY,
-        `property/image/${id}-500.jpg`
-    );
-
-    const thumbnailPath = Path.join(
-        process.env.TE_STATIC_DIRECTORY,
-        `property/image/${id}-80.jpg`
-    );
-
-    await Promise.all([
-        fsp.writeFile(imagePath, imageOutputBuffer),
-        fsp.writeFile(smallerImagePath, smallerImageOutputBuffer),
-        fsp.writeFile(thumbnailPath, imageThumbnailBuffer)
-    ]);
+    await generatePropertyImages({[id]: imageBuffer})
 
     Logger.trace(`Created property with id: ${id}`);
 
@@ -390,3 +337,62 @@ export const routes = {
         }
     }
 };
+
+export async function generatePropertyImages(buffers) {
+    let promises = [];
+    for (const [id, buffer] of Object.entries(buffers)) {
+        const [image, smallerImage, imageThumbnail] = [
+            // Primary photo generation
+            sharp(buffer).resize({
+                width: 3840,
+                height: 1080,
+                withoutEnlargement: true,
+                fit: "cover"
+            }),
+            // Smaller photo generation
+            sharp(buffer).resize({
+                width: 500,
+                height: 282,
+                withoutEnlargement: true,
+                fit: "cover"
+            }),
+            // thumbnail generation
+            sharp(buffer).resize(80)
+        ];
+        const imagePath = Path.join(
+            process.env.TE_STATIC_DIRECTORY,
+            `property/image/${id}.jpg`
+        );
+
+        const smallerImagePath = Path.join(
+            process.env.TE_STATIC_DIRECTORY,
+            `property/image/${id}-500.jpg`
+        );
+
+        const thumbnailPath = Path.join(
+            process.env.TE_STATIC_DIRECTORY,
+            `property/image/${id}-80.jpg`
+        );
+
+        promises = [
+            ...promises,
+            writePromise(imagePath, image.jpeg().toBuffer()),
+            writePromise(smallerImagePath, smallerImage.jpeg().toBuffer()),
+            writePromise(
+                thumbnailPath,
+                imageThumbnail
+                    .jpeg({
+                        quality: 30
+                    })
+                    .toBuffer()
+            ),
+            writePromise(imagePath, image.webp().toBuffer()),
+            writePromise(smallerImagePath, smallerImage.webp().toBuffer())
+        ];
+    }
+    await Promise.all(promises);
+}
+
+async function writePromise(path, promise) {
+    await fsp.writeFile(path, await promise);
+}

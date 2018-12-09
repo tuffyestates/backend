@@ -32,7 +32,6 @@ const router = new Middleware.Router();
 const api = new Middleware.Router({path: "/api"});
 const jwt = new Middleware.JsonWebToken({secret: process.env.TE_SECRET});
 
-
 async function addRoute(openapi, db, config, pathSegments = []) {
     assert(typeof config !== "undefined");
 
@@ -57,22 +56,28 @@ async function addRoute(openapi, db, config, pathSegments = []) {
                 "multipart/form-data"
             ];
 
-
-        for (const response of Object.values(get(config, "openapi.schema.produces"))) {
+        for (const response of Object.values(
+            get(config, "openapi.schema.produces")
+        )) {
             response.contentType = "application/json";
         }
 
         openapi.use(new Middleware.Route(config));
         Logger.trace(
-            `Added route "${config.method} ${openapi.path}${config.path}" to web server.`
+            `Added route "${config.method} ${openapi.path}${
+                config.path
+            }" to web server.`
         );
-
     } else {
         // It is an object, lets traverse it
         for (const [name, schema] of Object.entries(config.schemas || {})) {
             const mongoSchemaFormat = Joig.convert(schema);
             const mongoSchema = new mongoose.Schema(mongoSchemaFormat);
-            mongoSchema.path('_id').get(objectid => objectid ? objectid.id.toString("hex") : objectid);
+            mongoSchema
+                .path("_id")
+                .get(objectid =>
+                    objectid ? objectid.id.toString("hex") : objectid
+                );
             db.model(name, mongoSchema);
             Logger.trace(`Added schema to database for ${name}.`);
         }
