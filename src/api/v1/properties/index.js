@@ -215,8 +215,7 @@ export const routes = {
                         body: schemas.property.keys({
                             _id: _id.meta({type: "ObjectId", ref: "property"})
                         })
-                    },
-                    400: Joi.object()
+                    }
                 }
             }
         }
@@ -328,9 +327,6 @@ export const routes = {
                                 .meta({type: "ObjectId", ref: "property"})
                                 .notes("Newly created property's ID")
                         })
-                    },
-                    400: {
-                        body: Joi.object()
                     }
                 }
             }

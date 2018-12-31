@@ -50,6 +50,13 @@ async function addRoute(openapi, db, config, pathSegments = []) {
             });
         }
 
+        // Add bad request response code to every response
+        set(config, "openapi.schema.produces.400", {
+            body: Joi.object({
+                error: Joi.string().required()
+            })
+        });
+
         // Add multipart/form-data contenttype on request body
         if (get(config, "openapi.schema.consumes"))
             config.openapi.schema.consumes.contentTypes = [

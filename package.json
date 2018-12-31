@@ -15,7 +15,7 @@
         "type": "git",
         "url": "git+ssh://git@gitlab.com/tuffyestates/backend.git"
     },
-    "author": "",
+    "author": "Ayrton Sparling",
     "license": "UNLICENSED",
     "bugs": {
         "url": "https://gitlab.com/tuffyestates/backend/issues"
