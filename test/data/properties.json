@@ -1,0 +1,19 @@
+[{
+    "_id": "5c02e61ae9383d4866fbe92e",
+    "specification": {
+        "built": 1999,
+        "size": 1400,
+        "lot": 16,
+        "bedrooms": 3,
+        "bathrooms": 2
+    },
+    "address": "2644 Associated Rd, Fullerton, CA 92835, USA",
+    "price": 1000000,
+    "description": "123",
+    "owner": "5be8975f56c3e22b7dfbbd99",
+    "location": {
+        "lat": 33.8965908,
+        "lng": -117.8825007
+    },
+    "__v": 0
+}]

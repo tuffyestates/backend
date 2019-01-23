@@ -35,15 +35,18 @@ schemas.property = Joi.object({
         .example("A lovely little house by the beach!")
         .notes("Description of the property"),
     location: Joi.object({
-        lat: Joi.number()
-            .required()
-            .example(33.8965908)
-            .notes("Latitude"),
-        lng: Joi.number()
-            .required()
-            .example(-117.8825007)
-            .notes("Longitude")
-    }),
+        type: Joi.string().valid("Point").required(),
+        coordinates: Joi.array().ordered(
+            Joi.number()
+                .required()
+                .example(33.8965908)
+                .notes("Latitude"),
+            Joi.number()
+                .required()
+                .example(-117.8825007)
+                .notes("Longitude")
+        ).length(2)
+    }).required(),
     specification: Joi.object({
         built: Joi.number()
             .integer()
@@ -182,7 +185,7 @@ handlers.create = async function({req, res}) {
     const id = property.get("_id");
     const imageBuffer = req.body.image.content;
 
-    await generatePropertyImages({[id]: imageBuffer})
+    await generatePropertyImages({[id]: imageBuffer});
 
     Logger.trace(`Created property with id: ${id}`);
 

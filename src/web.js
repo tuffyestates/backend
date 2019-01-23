@@ -15,8 +15,8 @@ const CORS_OPTIONS = {
     credentials: true
 };
 
-assert(process.env.TE_SSL_CERT_PATH);
-assert(process.env.TE_SSL_KEY_PATH);
+assert(process.env.TE_SSL_CERT_PATH, 'No SSL cert path env variable');
+assert(process.env.TE_SSL_KEY_PATH, 'No SSL key path env variable');
 
 const server = new Server({
     certPath: process.env.TE_SSL_CERT_PATH,
