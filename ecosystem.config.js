@@ -1,5 +1,5 @@
 
-const name = `backend-${process.env.CI_ENVIRONMENT_NAME || 'production'}`;
+const name = `te-backend-${process.env.GIT_BRANCH || 'production'}`;
 
 module.exports = {
     apps: [{
