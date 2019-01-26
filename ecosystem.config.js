@@ -7,5 +7,5 @@ module.exports = {
         min_uptime: 10000, // 10 second min_uptime
         max_restarts: 3,
         script: 'index.js',
-    }],
+    }]
 };
