@@ -26,7 +26,7 @@ npm install
 In order to run the backend you need an ssl key and certificate to respond to secure requests.
 ```
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out key.pem
-openssl req -key key.pem -x509 -new -days days -out cert.pem
+openssl req -key key.pem -x509 -new -days 3650 -out cert.pem
 ```
 
 Create a `.env` file with the following:
