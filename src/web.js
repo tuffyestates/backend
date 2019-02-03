@@ -25,7 +25,7 @@ const server = new Server({
 server.onError = async function onError({res, error}) {
     res.body = {error: error.message};
     Logger.trace(error);
-    Logger.warn(error.data.message || error.message);
+    Logger.warn(error.data ? error.data.message : error.message);
 };
 
 const router = new Middleware.Router();
@@ -69,7 +69,7 @@ async function addRoute(openapi, db, config, pathSegments = []) {
             response.contentType = "application/json";
         }
 
-        openapi.use(new Middleware.Route(config));
+        await openapi.use(new Middleware.Route(config));
         Logger.trace(
             `Added route "${config.method} ${openapi.path}${
                 config.path
