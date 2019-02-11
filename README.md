@@ -6,10 +6,12 @@ Master is a protected branch, you can only merge into it.
 
 ## Developing
 
+Install Docker Hub on your computer: https://www.docker.com/get-started
+
 ```
 git clone git@github.com:tuffyestates/backend.git -b develop
-cd develop
-npm start
+cd backend
+./run.sh
 ```
 You will now be able to access the server on [localhost:11638](http://localhost:11638).
 
