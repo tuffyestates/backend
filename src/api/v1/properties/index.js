@@ -11,73 +11,84 @@ import Logger from "../../../logger";
 import {set} from "../../../utils";
 
 const fsp = fs.promises;
-const _id = Joi.string()
+
+export const components = {};
+components._id = Joi.string()
     .hex()
     .length(24)
-    .example("5bd3ddfdf20ff91132255496");
+    .example("5bd3ddfdf20ff91132255496")
+    .meta({type: "ObjectId"});
+components.address = Joi.string()
+    .required()
+    .example("7266 South Golf Lane");
+components.price = Joi.number()
+    .integer()
+    .min(0)
+    .required()
+    .example(1640000);
+components.location = Joi.object({
+    type: Joi.string().valid("Point").required(),
+    coordinates: Joi.array().ordered(
+        Joi.number()
+            .required()
+            .example(33.8965908)
+            .notes("Latitude"),
+        Joi.number()
+            .required()
+            .example(-117.8825007)
+            .notes("Longitude")
+    ).length(2)
+});
+components.year = Joi.number()
+    .integer()
+    .example(1999)
+    .min(1000)
+    .max(3000);
+components.acres = Joi.number()
+    .example(23)
+    .min(0);
+components.sqft = Joi.number()
+    .integer()
+    .example(4710)
+    .min(1);
 
 export const schemas = {};
 schemas.property = Joi.object({
-    owner: _id
-        .meta({type: "ObjectId", ref: "user"})
-        .notes("ID of the owner of the property"),
-    address: Joi.string()
-        .required()
-        .example("7266 South Golf Lane"),
-    price: Joi.number()
-        .integer()
-        .min(0)
-        .required()
-        .example(1640000)
-        .notes("Price of the property in USD"),
+    owner: components._id
+        .meta({ref: "user"})
+        .notes("ID of the owner of the property")
+        .required(),
+    address: components.address.required(),
+    price: components.price
+        .notes("Price of the property in USD")
+        .required(),
     description: Joi.string()
-        .required()
         .example("A lovely little house by the beach!")
-        .notes("Description of the property"),
-    location: Joi.object({
-        type: Joi.string().valid("Point").required(),
-        coordinates: Joi.array().ordered(
-            Joi.number()
-                .required()
-                .example(33.8965908)
-                .notes("Latitude"),
-            Joi.number()
-                .required()
-                .example(-117.8825007)
-                .notes("Longitude")
-        ).length(2)
-    }).required(),
+        .notes("Description of the property")
+        .required(),
+    location: components.location.required(),
     specification: Joi.object({
-        built: Joi.number()
-            .integer()
-            .required()
-            .example(1999)
-            .min(1000)
-            .max(3000)
-            .notes("Year the property was built"),
-        lot: Joi.number()
-            .required()
-            .example(23)
-            .min(0)
-            .notes("Size of the property in acres"),
+        built: components.year
+            .notes("Year the property was built")
+            .required(),
+        lot: components.acres
+            .notes("Size of the property in acres")
+            .required(),
         bedrooms: Joi.number()
             .integer()
-            .required()
             .example(3)
             .min(0)
-            .notes("Number of bedrooms"),
+            .notes("Number of bedrooms")
+            .required(),
         bathrooms: Joi.number()
             .integer()
-            .required()
             .example(2)
             .min(0)
-            .notes("Number of bathrooms"),
-        size: Joi.number()
-            .integer()
-            .required()
-            .example(4710)
-            .min(1)
+            .notes("Number of bathrooms")
+            .required(),
+        size: components.sqft
             .notes("Size of the property in squarefeet")
+            .required()
     })
 });
 
@@ -210,13 +221,15 @@ export const routes = {
             schema: {
                 consumes: {
                     path: Joi.object({
-                        id: _id.notes("UUID of the property to get").required()
+                        id: components._id
+                            .meta({ref: "property"})
+                            .notes("UUID of the property to get").required()
                     })
                 },
                 produces: {
                     200: {
                         body: schemas.property.keys({
-                            _id: _id.meta({type: "ObjectId", ref: "property"})
+                            _id: components._id.meta({ref: "property"})
                         })
                     }
                 }
@@ -237,9 +250,7 @@ export const routes = {
                             .min(0)
                             .default(0)
                             .example(0)
-                            .notes(
-                                "Offset your search results. Used for pagination."
-                            ),
+                            .notes("Offset your search results. Used for pagination."),
                         limit: Joi.number()
                             .integer()
                             .min(1)
@@ -295,10 +306,8 @@ export const routes = {
                     200: {
                         body: Joi.array().items(
                             schemas.property.keys({
-                                _id: _id.meta({
-                                    type: "ObjectId",
-                                    ref: "property"
-                                })
+                                _id: components._id
+                                    .meta({ref: "property"}).required()
                             })
                         )
                     }
@@ -326,9 +335,10 @@ export const routes = {
                     201: {
                         description: "Property created",
                         body: Joi.object({
-                            _id: _id
-                                .meta({type: "ObjectId", ref: "property"})
+                            _id: components._id
+                                .meta({ref: "property"})
                                 .notes("Newly created property's ID")
+                                .required()
                         })
                     }
                 }

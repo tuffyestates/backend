@@ -9,10 +9,15 @@ import Logger from "../../../logger";
 
 const {HTTP2_HEADER_SET_COOKIE, HTTP2_HEADER_STATUS} = http2.constants;
 
+export const components = {};
+components.username = Joi.string().example("RamboCom");
+components.password = Joi.string().example("WeakPassword123");
+components.token = Joi.string().example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c").notes("The token used to authenticate future requests");
+
 export const schemas = {};
 schemas.user = Joi.object({
-    username: Joi.string().required(),
-    password: Joi.string().required()
+    username: components.username.required(),
+    password: components.password.required()
 });
 
 export const tags = ["users"];
@@ -118,8 +123,6 @@ handlers.status = async function({req, res}) {
     };
 };
 
-const token = Joi.string().example("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c").notes("The token used to authenticate future requests");
-
 export const routes = {
     "POST": {
         handler: handlers.register,
@@ -135,7 +138,7 @@ export const routes = {
                     200: {
                         description: "User registered",
                         body: Joi.object({
-                            token
+                            token: components.token.required()
                         })
                     }
                 }
@@ -156,7 +159,7 @@ export const routes = {
                         200: {
                             description: "Token authenticated",
                             body: Joi.object({
-                                token
+                                token: components.token.required()
                             })
                         }
                     }
@@ -191,7 +194,7 @@ export const routes = {
                         200: {
                             description: "Got user status",
                             body: Joi.object({
-                                username: Joi.string().required()
+                                username: components.username.required()
                             })
                         }
                     }
