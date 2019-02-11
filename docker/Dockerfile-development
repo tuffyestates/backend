@@ -1,0 +1,9 @@
+FROM node:alpine
+
+RUN apk add git
+RUN apk add python2
+RUN apk add make
+RUN apk add g++
+WORKDIR /usr/src/app
+
+CMD npm install && npm run watch

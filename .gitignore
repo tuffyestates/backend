@@ -5,6 +5,14 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+dbdata
+
+# Docker override files
+docker-compose*.override.yml
+
+# Private keys
+*.pem
+
 # Temp data directory
 temp
 

@@ -1,4 +1,5 @@
 import assert from "assert";
+import fs from "fs";
 
 import {Server, Middleware} from "ayyo";
 import mongoose from "mongoose";
@@ -15,6 +16,18 @@ const CORS_OPTIONS = {
     credentials: true
 };
 
+if (!fs.existsSync(process.env.TE_SSL_KEY_PATH) && !fs.existsSync(process.env.TE_SSL_CERT_PATH)) {
+    Logger.warn(`No key/cert pair found at [${process.env.TE_SSL_KEY_PATH}, ${process.env.TE_SSL_CERT_PATH}}]`);
+    Logger.warn("Attempting to generate key/cert pair!");
+
+    const selfsigned = require('selfsigned');
+    const attrs = [{ name: 'commonName', value: 'estates.localhost' }];
+    const pems = selfsigned.generate(attrs, { days: 365 });
+    fs.writeFileSync(process.env.TE_SSL_KEY_PATH, pems.private);
+    fs.writeFileSync(process.env.TE_SSL_CERT_PATH, pems.cert);
+
+    Logger.info("Key/cert pair generated successfully.");
+}
 assert(process.env.TE_SSL_CERT_PATH, 'No SSL cert path env variable');
 assert(process.env.TE_SSL_KEY_PATH, 'No SSL key path env variable');
 

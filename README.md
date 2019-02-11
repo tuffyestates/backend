@@ -1,6 +1,6 @@
 # Backend for Tuffy Estates
 
-*Only make changes to develop branch, master is stable*
+*Only make changes to the develop branch, master is stable*
 
 Master is a protected branch, you can only merge into it.
 
@@ -8,37 +8,34 @@ Master is a protected branch, you can only merge into it.
 TODO
 
 ## Dependencies
-* [Git](https://git-scm.com/downloads)
-* [Node.js 11+](https://nodejs.org/en/)
-* [MongoDB](https://www.mongodb.com/download-center/community)
-* [OpenSSL](https://www.openssl.org/source/) to generate ssl key and private certificate
-* [Python 2.x.x](https://www.python.org/downloads/) for [sharp](https://www.npmjs.com/package/sharp)'s native bindings
+* Docker Engine 18.06.0+ | Installers: [Mac](https://download.docker.com/mac/stable/Docker.dmg) [Win](https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe)
+* [Docker Compose](https://github.com/docker/compose/releases/) 1.23.2+
 
 ## Developing
-Ensure you have a MongoDB database running and accepting connections on `localhost:27017`.
 
+The following will download the source code.
 ```
-git clone git@github.com:tuffyestates/backend.git -b develop
-cd backend
-npm install
-```
-
-In order to run the backend you need an ssl key and certificate to respond to secure requests.
-```
-openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out key.pem
-openssl req -key key.pem -x509 -new -days 3650 -out cert.pem
+$ git clone git@github.com:tuffyestates/backend.git -b develop    # Download the source
+$ cd backend    # Change to the newly downloaded backend directory
 ```
 
-Create a `.env` file with the following:
+Next you will need to start the docker containers.
+
+##### Unix
 ```
-TE_SSL_CERT_PATH="./cert.pem"
-TE_SSL_KEY_PATH="./key.pem"
+$ ./run.sh    # Start the docker containers
 ```
 
-You can see `.env.sample` for more information.
+##### Windows
+```
+$ run.bat    # Start the docker containers
+```
 
 You will now be able to access the server on [https://localhost:11638](https://localhost:11638).
 
+## Viewing the database
+
+Download [MongoDB Compass](https://www.mongodb.com/download-center/compass). Upon opening MongoDB Compass, enter `27020` for the port, leave all other settings at their default and hit connect. You should see a tuffyestates database.
 
 #### References
 https://medium.com/yalantis-mobile/what-technology-stack-do-zillow-redfin-and-realtor-com-use-for-property-listings-b6b1ba695618
