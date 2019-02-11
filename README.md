@@ -7,7 +7,7 @@ Master is a protected branch, you can only merge into it.
 ## Developing
 
 ```
-git clone git@gitlab.com:tuffyestates/backend.git -b develop
+git clone git@github.com:tuffyestates/backend.git -b develop
 cd develop
 npm start
 ```
