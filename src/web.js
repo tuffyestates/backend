@@ -22,7 +22,7 @@ if (!fs.existsSync(process.env.TE_SSL_KEY_PATH) && !fs.existsSync(process.env.TE
 
     const selfsigned = require('selfsigned');
     const attrs = [{ name: 'commonName', value: 'estates.localhost' }];
-    const pems = selfsigned.generate(attrs, { days: 365 });
+    const pems = selfsigned.generate(attrs, { days: 365, algorithm: 'sha256', keySize: 2048 });
     fs.writeFileSync(process.env.TE_SSL_KEY_PATH, pems.private);
     fs.writeFileSync(process.env.TE_SSL_CERT_PATH, pems.cert);
 
