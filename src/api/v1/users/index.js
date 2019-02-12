@@ -135,7 +135,7 @@ export const routes = {
                     body: schemas.user
                 },
                 produces: {
-                    200: {
+                    201: {
                         description: "User registered",
                         body: Joi.object({
                             token: components.token.required()
