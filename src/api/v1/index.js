@@ -1,6 +1,7 @@
 import * as users from "./users";
 import * as properties from "./properties";
 
+// This is the static (non generated) portion of the openapi documentation
 export const doc = {
     info: {
         title: "Tuffy Estates",

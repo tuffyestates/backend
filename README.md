@@ -41,3 +41,7 @@ Download [MongoDB Compass](https://www.mongodb.com/download-center/compass). Upo
 https://medium.com/yalantis-mobile/what-technology-stack-do-zillow-redfin-and-realtor-com-use-for-property-listings-b6b1ba695618
 https://yalantis.com/blog/mobile-real-estate-app-development-usa-zillow-trulia-apps-technology/
 https://patents.google.com/?assignee=Zillow&oq=assignee:Zillow
+
+#### Geocoding Data Sources
+OSM - https://wiki.openstreetmap.org/wiki/Osmosis
+http://download.geonames.org/export/dump/
