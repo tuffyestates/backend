@@ -27,6 +27,8 @@
         "ayyo": "git+https://github.com/FallingSnow/ayyo.git",
         "bcrypt": "^3.0.2",
         "chalk": "^2.4.1",
+        "elasticemail-webapiclient": "^2.0.8-s",
+        "elasticemail_restful_api": "^3.0.0-b",
         "esm": "^3.0.84",
         "joi": "^14.3.0",
         "joigoose": "git+https://github.com/FallingSnow/joigoose.git",
