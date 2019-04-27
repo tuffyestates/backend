@@ -1,5 +1,9 @@
 import eeClient from "elasticemail-webapiclient";
 import Logger from "../../../logger";
+import Joi from "joi";
+import {HTTPError} from "ayyo";
+
+import DB from "../../../database";
 
 export const components = {};
 components.email = Joi.string().example("JohnDoe@gmail.com");
