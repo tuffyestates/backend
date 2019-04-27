@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import {generatePropertyImages} from '../../src/api/v1/properties';
-import properties from '../data/properties.json';
 import fs from 'fs';
 
 // TODO: Use properties json file rather than manually defining the images/propertyIds
