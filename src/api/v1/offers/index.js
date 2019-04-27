@@ -1,4 +1,4 @@
-import eeClient from "elasticemail-webapiclient";
+import {client as eeClient} from "elasticemail-webapiclient";
 import Logger from "../../../logger";
 import Joi from "joi";
 import {HTTPError} from "ayyo";
@@ -6,18 +6,18 @@ import {HTTPError} from "ayyo";
 import DB from "../../../database";
 
 export const components = {};
-components.email = Joi.string().example("JohnDoe@gmail.com");
 components.name = Joi.string().example("John Doe");
 components.phone = Joi.string().example("7773331234");
 components.homeOffer = Joi.string()
   .hex()
   .length(24)
-  .example("5bd3ddfdf20ff91132255496")
+  .example("5c02e61ae9383d4866fbe92e")
   .meta({ type: "ObjectId" });
-components.cashOffer = Joi.integer()
+components.cashOffer = Joi.number().integer()
   .positive()
-  .example("200000");
-components.comments = Joi.string().example("A pool table");
+  .example(200000);
+components.comments = Joi.string()
+  .example("A pool table");
 
 export const handlers = {};
 handlers.email = async function({ req, res }) {
@@ -26,7 +26,7 @@ handlers.email = async function({ req, res }) {
 
   const property = await database.models.property.findOne(
     {
-      _id: req.body.tradeOffer
+      _id: req.body.homeOffer
     },
     { __v: 0 }
   );
@@ -47,14 +47,14 @@ handlers.email = async function({ req, res }) {
   // Load account data
   const response = await EE.Account.Load();
   Logger.debug(response);
-  Logger.debug(req.jwd.email);
+  Logger.debug(req.jwt.email);
 
   // Email data
   const emailParams = {
-    subject: "Tuffy Estates - You got an offer for your home",
-    to: req.body.email,
+    subject: "You got an offer for your home",
+    to: "tuffyestates@gmail.com",
     from: "tuffyestates@gmail.com",
-    replyTo: req.jwd.email,
+    replyTo: req.jwt.email,
     body: `Name: ${req.body.name}
     Email: ${req.body.phone}
     Phone: ${req.body.phone}
@@ -74,13 +74,13 @@ export const routes = {
     handler: handlers.email,
     openapi: {
       description: "Email",
+      security: [{JsonWebToken: []}],
       schema: {
         consumes: {
           body: Joi.object({
-            email: components.email.required(),
             name: components.name.required(),
             phone: components.phone.required(),
-            tradeOffer: components.tradeOffer.required(),
+            homeOffer: components.homeOffer.required(),
             cashOffer: components.cashOffer,
             comments: components.comments
           })
