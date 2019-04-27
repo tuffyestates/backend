@@ -1,6 +1,6 @@
 [{
-    "_id": "5be8975f56c3e22b7dfbbd99",
-    "username": "ayrton",
-    "password": "$2b$10$x2cMsvm7UiNMQus3TQoksuVRWQbsn5Nucwgw4BbWlPjialrfWeiFu",
+    "_id": ObjectId("5be8975f56c3e22b7dfbbd99"),
+    "email": "demo@demo.com",
+    "password": "$2a$10$Ukq./aPD10ujG49IrGccu.v5WJWUlgmnNrDVIepmkS1JYFWPo7G8q",
     "__v": 0
 }]
