@@ -12,12 +12,7 @@ import {set} from "../../../utils";
 
 const fsp = fs.promises;
 
-export const components = {};
-components._id = Joi.string()
-    .hex()
-    .length(24)
-    .example("5bd3ddfdf20ff91132255496")
-    .meta({type: "ObjectId"});
+export const components = require('../globalComponents.js').default;
 components.address = Joi.string()
     .required()
     .example("7266 South Golf Lane");
@@ -245,19 +240,8 @@ export const routes = {
             schema: {
                 consumes: {
                     query: Joi.object({
-                        offset: Joi.number()
-                            .integer()
-                            .min(0)
-                            .default(0)
-                            .example(0)
-                            .notes("Offset your search results. Used for pagination."),
-                        limit: Joi.number()
-                            .integer()
-                            .min(1)
-                            .max(100)
-                            .default(20)
-                            .example(10)
-                            .notes("Max number of results to return."),
+                        offset: components.offset,
+                        limit: components.limit,
                         "price-min": Joi.number()
                             .integer()
                             .min(0)

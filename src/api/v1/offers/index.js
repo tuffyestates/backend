@@ -35,6 +35,19 @@ handlers.email = async function({ req, res }) {
     throw new HTTPError(400, "Property not found");
   }
 
+  Logger.debug(req.jwt.sub)
+
+  const user = await database.models.user.findOne(
+    {
+      _id: req.jwt.sub
+    },
+    { __v: 0 }
+  );
+  // user was not found
+  if (!user) {
+    throw new HTTPError(400, "User not found");
+  }
+
   // Email client credentials
   const options = {
     apiKey: "b096ebb6-97f8-4b24-b669-686c9641198e",
@@ -45,16 +58,15 @@ handlers.email = async function({ req, res }) {
   const EE = new eeClient(options);
 
   // Load account data
-  const response = await EE.Account.Load();
-  Logger.debug(response);
-  Logger.debug(req.jwt.email);
+  const {data: accountInfo} = await EE.Account.Load();
+  Logger.debug(accountInfo);
 
   // Email data
   const emailParams = {
     subject: "You got an offer for your home",
     to: "tuffyestates@gmail.com",
-    from: "tuffyestates@gmail.com",
-    replyTo: req.jwt.email,
+    from: accountInfo.email,
+    replyTo: user.email,
     body: `Name: ${req.body.name}
     Email: ${req.body.phone}
     Phone: ${req.body.phone}
