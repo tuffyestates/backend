@@ -313,7 +313,7 @@ export const routes = {
                             filename: Joi.string(),
                             content: Joi.binary()
                         })
-                    })
+                    }).forbiddenKeys('owner', 'location')
                 },
                 produces: {
                     201: {
@@ -333,6 +333,18 @@ export const routes = {
 
 export async function generatePropertyImages(buffers) {
     let promises = [];
+
+    // FIXME: This should only be done on server startup, not here...
+    const imageDirectory = Path.join(
+        process.env.TE_STATIC_DIRECTORY,
+        `property/image`
+    );
+    try {
+      await fsp.mkdir(imageDirectory, {recursive: true});
+    } catch (e) {
+      console.warn(e);
+    }
+
     for (const [id, buffer] of Object.entries(buffers)) {
         const [image, smallerImage, imageThumbnail] = [
             // Primary photo generation
@@ -353,18 +365,18 @@ export async function generatePropertyImages(buffers) {
             sharp(buffer).resize(80)
         ];
         const imagePath = Path.join(
-            process.env.TE_STATIC_DIRECTORY,
-            `property/image/${id}.jpg`
+            imageDirectory,
+            `${id}.jpg`
         );
 
         const smallerImagePath = Path.join(
-            process.env.TE_STATIC_DIRECTORY,
-            `property/image/${id}-500.jpg`
+            imageDirectory,
+            `${id}-500.jpg`
         );
 
         const thumbnailPath = Path.join(
-            process.env.TE_STATIC_DIRECTORY,
-            `property/image/${id}-80.jpg`
+            imageDirectory,
+            `${id}-80.jpg`
         );
 
         promises = [
