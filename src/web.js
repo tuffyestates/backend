@@ -1,14 +1,13 @@
 import assert from "assert";
 import fs from "fs";
 
-import { Server, Middleware } from "ayyo";
+const {Server, Middleware} = require("ayyo");
 import mongoose from "mongoose";
-const Joi = require("joi");
+const Joi = require("@hapi/joi");
 const Joig = require("joigoose")(mongoose);
 
 import Logger from "./logger";
 import API from "./api";
-import DB from "./database";
 import { get, set } from "./utils";
 
 // These options define the CORS options used by our CORS middleware
@@ -121,9 +120,6 @@ async function addRoute(openapi, db, config, pathSegments = []) {
     for (const [name, schema] of Object.entries(config.schemas || {})) {
       const mongoSchemaFormat = Joig.convert(schema);
       const mongoSchema = new mongoose.Schema(mongoSchemaFormat);
-      mongoSchema
-        .path("_id")
-        .get(objectid => (objectid ? objectid.id.toString("hex") : objectid));
       db.model(name, mongoSchema);
       Logger.trace(`Added schema to database for ${name}.`);
     }

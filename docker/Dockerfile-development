@@ -7,4 +7,4 @@ RUN apk add g++
 RUN apk add mongodb-tools
 WORKDIR /usr/src/app
 
-CMD npm install && npm run watch
+CMD yarn --no-cache && yarn run watch

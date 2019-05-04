@@ -3,4 +3,9 @@
     "email": "demo@demo.com",
     "password": "$2a$10$Ukq./aPD10ujG49IrGccu.v5WJWUlgmnNrDVIepmkS1JYFWPo7G8q",
     "__v": 0
+},{
+    "_id": ObjectId("5be8975f56c3e22b7dfbbdf9"),
+    "email": "demo2@demo.com",
+    "password": "$2a$10$Ukq./aPD10ujG49IrGccu.v5WJWUlgmnNrDVIepmkS1JYFWPo7G8q",
+    "__v": 0
 }]

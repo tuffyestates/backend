@@ -1,6 +1,5 @@
 import * as users from "./users";
 import * as properties from "./properties";
-import * as offers from "./offers";
 
 // This is the static (non generated) portion of the openapi documentation
 export const doc = {
@@ -48,6 +47,5 @@ export const doc = {
 
 export const routes = {
     users,
-    properties,
-    offers
+    properties
 };

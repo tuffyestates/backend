@@ -1,6 +1,6 @@
 import http2 from "http2";
 
-import Joi from "joi";
+import Joi from "@hapi/joi";
 import bcrypt from "bcrypt";
 import { Middleware, HTTPError } from "ayyo";
 
@@ -102,7 +102,8 @@ handlers.login = async function({ req, res }) {
 
   // Send the client their token
   res.body = {
-    token
+    token,
+    id: user.get("_id")
   };
 };
 handlers.logout = async function({ req, res }) {
@@ -129,17 +130,20 @@ handlers.status = async function({ req, res }) {
   }
 
   res.body = {
-    email: user.get("email")
+    email: user.get("email"),
+    id: user.get("_id"),
   };
 };
 handlers.listings = async function({ req, res }) {
   const database = await DB();
 
+  Logger.trace(`Finding listings with owner:`, req.query.userId || req.jwt.sub);
+
   // Try to find the user using the _id provided
   const properties = await database.models.property
     .find({
       owner: req.query.userId || req.jwt.sub
-    })
+    }, {__v: 0})
     .skip(req.query.offset)
     .limit(req.query.limit);
 
@@ -185,7 +189,8 @@ export const routes = {
           200: {
             description: "Token authenticated",
             body: Joi.object({
-              token: components.token.required()
+              token: components.token.required(),
+              id: components._id.required()
             })
           }
         }
@@ -220,7 +225,8 @@ export const routes = {
           200: {
             description: "Got user status",
             body: Joi.object({
-              email: components.email.required()
+              email: components.email.required(),
+              id: components._id.required()
             })
           }
         }
