@@ -9,6 +9,8 @@ const images = {
     '5c02e61ae9383d4866fbe92f': 'test/data/images/brian-babb-256298-unsplash.jpg',
     '5c02e61ae9383d4866fbe93e': 'test/data/images/christopher-harris-55545-unsplash.jpg',
     '5c02e61ae9383d4866fbe94e': 'test/data/images/eduard-militaru-129399-unsplash.jpg',
+    '5c02e61ae9383d4866fbe95f': 'test/data/images/flo-pappert-201009-unsplash.jpg',
+    '5c02e61ae9383d4866fce99e': 'test/data/images/johny-vino-1164148-unsplash.jpg',
 };
 
 (async() => {

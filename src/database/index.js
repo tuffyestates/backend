@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+// Set getter function for ObjectIds to return a string
+mongoose.ObjectId.get(v => typeof v === "object" ? v.toString("hex") : v);
+
 import Logger from '../logger';
 
 let databaseSingleton = null;
@@ -25,7 +28,7 @@ export default async function initDatabase(url) {
 
     // Store the database connection for later use
     databaseSingleton = mongoose;
-    
+
     return mongoose;
 }
 

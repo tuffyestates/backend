@@ -1,23 +1,20 @@
 import Path from "path";
 import fs from "fs";
 
-import Joi from "joi";
+import Joi from "@hapi/joi";
 import sharp from "sharp";
 import axios from "axios";
 import {HTTPError} from "ayyo";
+import {client as eeClient} from "elasticemail-webapiclient";
 
 import DB from "../../../database";
 import Logger from "../../../logger";
 import {set} from "../../../utils";
 
 const fsp = fs.promises;
+const { HTTP2_HEADER_STATUS } = require('http2').constants;
 
-export const components = {};
-components._id = Joi.string()
-    .hex()
-    .length(24)
-    .example("5bd3ddfdf20ff91132255496")
-    .meta({type: "ObjectId"});
+export const components = require('../globalComponents.js').default;
 components.address = Joi.string()
     .required()
     .example("7266 South Golf Lane");
@@ -51,6 +48,11 @@ components.sqft = Joi.number()
     .integer()
     .example(4710)
     .min(1);
+components.cash = Joi.number().integer()
+  .positive()
+  .example(200000);
+components.comments = Joi.string()
+  .example("I am very interested in swapping homes!");
 
 export const schemas = {};
 schemas.property = Joi.object({
@@ -164,31 +166,33 @@ handlers.getById = async function({req, res}) {
 handlers.create = async function({req, res}) {
     const database = await DB();
 
-    const geocode = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json`,
-        {
-            params: {
-                address: req.body.address,
-                key: process.env.TE_GOOGLE_API_KEY
-            }
-        }
-    );
-
-    Logger.debug("Got property address:", geocode.data);
-
-    // Check if geocoding request was a success
-    if (geocode.data.status !== "OK" || geocode.data.results.length < 1) {
-        throw new HTTPError(400, "Invalid property address");
-    }
-
-    const address = geocode.data.results[0].formatted_address;
-    const location = geocode.data.results[0].geometry.location;
+    // const geocode = await axios.get(
+    //     `https://maps.googleapis.com/maps/api/geocode/json`,
+    //     {
+    //         params: {
+    //             address: req.body.address,
+    //             key: process.env.TE_GOOGLE_API_KEY
+    //         }
+    //     }
+    // );
+    //
+    // Logger.debug("Got property address:", geocode.data);
+    //
+    // // Check if geocoding request was a success
+    // if (geocode.data.status !== "OK" || geocode.data.results.length < 1) {
+    //     throw new HTTPError(400, "Invalid property address");
+    // }
+    //
+    // const address = geocode.data.results[0].formatted_address;
+    // const location = geocode.data.results[0].geometry.location;
 
     const property = new database.models.property(
         Object.assign(req.body, {
             owner: req.jwt.sub,
-            address,
-            location
+            location: {
+              type: 'Point',
+              coordinates: [0, 0]
+            }
         })
     );
 
@@ -203,10 +207,85 @@ handlers.create = async function({req, res}) {
     // Save property to database
     await property.save();
 
+    res.headers[HTTP2_HEADER_STATUS] = 201;
+
     // Send back the created property's ID
     res.body = {
         id
     };
+};
+handlers.swapEmail = async function({ req, res }) {
+  // Connect to DB
+  const database = await DB();
+
+  const property = await database.models.property.findOne(
+    {
+      _id: req.body.homeId
+    },
+    { __v: 0 }
+  );
+  // If the property wasn't found inform the user
+  if (!property) {
+    throw new HTTPError(400, "Property not found");
+  }
+
+
+  const user = await database.models.user.findOne(
+    {
+      _id: req.jwt.sub
+    },
+    { __v: 0 }
+  );
+
+  // user was not found
+  if (!user) {
+    throw new HTTPError(400, "User not found");
+  }
+
+  const owner = await database.models.user.findOne(
+    {
+      _id: property.owner
+    },
+    { __v: 0 }
+  );
+
+  // user was not found
+  if (!owner) {
+    throw new HTTPError(400, "Property owner not found");
+  }
+
+  // Email client credentials
+  const options = {
+    apiKey: "b096ebb6-97f8-4b24-b669-686c9641198e",
+    apiUri: "https://api.elasticemail.com/",
+    apiVersion: "v2"
+  };
+
+  const EE = new eeClient(options);
+
+  // Load account data
+  const {data: accountInfo} = await EE.Account.Load();
+
+  // Email data
+  const emailParams = {
+    subject: "You got a swap offer for your home",
+    to: owner.email,
+    from: accountInfo.email,
+    replyTo: user.email,
+    body: `Someone is interested!
+    Trade Home: ${property.address}
+    Cash Offer: ${req.body.cashOffer}
+    Comments: ${req.body.comments}`,
+    fromName: "Tuffy Estates",
+    bodyType: "Plain"
+  };
+
+  // Send email
+  await EE.Email.Send(emailParams);
+
+  Logger.debug("Email sent:", emailParams);
+
+  res.headers[HTTP2_HEADER_STATUS] = 204;
 };
 
 // /////////////////////////////////////////////// ROUTES
@@ -245,19 +324,8 @@ export const routes = {
             schema: {
                 consumes: {
                     query: Joi.object({
-                        offset: Joi.number()
-                            .integer()
-                            .min(0)
-                            .default(0)
-                            .example(0)
-                            .notes("Offset your search results. Used for pagination."),
-                        limit: Joi.number()
-                            .integer()
-                            .min(1)
-                            .max(100)
-                            .default(20)
-                            .example(10)
-                            .notes("Max number of results to return."),
+                        offset: components.offset,
+                        limit: components.limit,
                         "price-min": Joi.number()
                             .integer()
                             .min(0)
@@ -335,7 +403,7 @@ export const routes = {
                     201: {
                         description: "Property created",
                         body: Joi.object({
-                            _id: components._id
+                            id: components._id
                                 .meta({ref: "property"})
                                 .notes("Newly created property's ID")
                                 .required()
@@ -344,6 +412,29 @@ export const routes = {
                 }
             }
         }
+    },
+    "swap/POST": {
+      handler: handlers.swapEmail,
+      openapi: {
+        description: "Swap a property",
+        operationId: "swapProperty",
+        tags: ["properties"],
+        security: [{JsonWebToken: []}],
+        schema: {
+          consumes: {
+            body: Joi.object({
+              homeId: components._id.required(),
+              cash: components.cash,
+              comments: components.comments
+            })
+          },
+          produces: {
+            204: {
+              description: "Email Information Accepted"
+            }
+          }
+        }
+      }
     }
 };
 

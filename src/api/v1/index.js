@@ -29,10 +29,6 @@ export const doc = {
         {
             name: "properties",
             description: "Everything about Properties"
-        },
-        {
-            name: "messages",
-            description: "Everything about messages"
         }
     ],
     components: {

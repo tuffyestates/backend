@@ -72,5 +72,41 @@
 			"coordinates": [33.8965908, -117.8825007]
         },
         "__v": 0
+    }, {
+        "_id": ObjectId("5c02e61ae9383d4866fbe95f"),
+        "specification": {
+            "built": 2008,
+            "size": 3400,
+            "lot": 9,
+            "bedrooms": 5,
+            "bathrooms": 3
+        },
+        "address": "4691 Virginia Street, Chicago, IL",
+        "price": 820000,
+        "description": "Beautiful summertime home.",
+        "owner": ObjectId("5be8975f56c3e22b7dfbbdf9"),
+        "location": {
+            "type": "Point",
+			"coordinates": [33.8965908, -117.8825007]
+        },
+        "__v": 0
+    }, {
+        "_id": ObjectId("5c02e61ae9383d4866fce99e"),
+        "specification": {
+            "built": 2008,
+            "size": 3400,
+            "lot": 9,
+            "bedrooms": 5,
+            "bathrooms": 3
+        },
+        "address": "4691 Virginia Street, Chicago, IL",
+        "price": 820000,
+        "description": "Beautiful summertime home.",
+        "owner": ObjectId("5be8975f56c3e22b7dfbbdf9"),
+        "location": {
+            "type": "Point",
+			"coordinates": [33.8965908, -117.8825007]
+        },
+        "__v": 0
     }
 ]

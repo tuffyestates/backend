@@ -1,16 +1,17 @@
 import http2 from "http2";
 
-import Joi from "joi";
+import Joi from "@hapi/joi";
 import bcrypt from "bcrypt";
 import { Middleware, HTTPError } from "ayyo";
 
 import DB from "../../../database";
 import Logger from "../../../logger";
+import {schemas as propertySchemas} from "../properties";
 
 const { HTTP2_HEADER_SET_COOKIE, HTTP2_HEADER_STATUS } = http2.constants;
 
-export const components = {};
-components.email = Joi.string().example("JohnDoe@gmail.com");
+export const components = require('../globalComponents.js').default;
+components.email = Joi.string().email().example("JohnDoe@gmail.com");
 components.password = Joi.string().example("WeakPassword123");
 components.token = Joi.string()
   .example(
@@ -20,7 +21,7 @@ components.token = Joi.string()
 
 export const schemas = {};
 schemas.user = Joi.object({
-  email: components.email.email().required(),
+  email: components.email.required(),
   password: components.password.required()
 });
 
@@ -101,7 +102,8 @@ handlers.login = async function({ req, res }) {
 
   // Send the client their token
   res.body = {
-    token
+    token,
+    id: user.get("_id")
   };
 };
 handlers.logout = async function({ req, res }) {
@@ -128,8 +130,27 @@ handlers.status = async function({ req, res }) {
   }
 
   res.body = {
-    email: user.get("email")
+    email: user.get("email"),
+    id: user.get("_id"),
   };
+};
+handlers.listings = async function({ req, res }) {
+  const database = await DB();
+
+  Logger.trace(`Finding listings with owner:`, req.query.userId || req.jwt.sub);
+
+  // Try to find the user using the _id provided
+  const properties = await database.models.property
+    .find({
+      owner: req.query.userId || req.jwt.sub
+    }, {__v: 0})
+    .skip(req.query.offset)
+    .limit(req.query.limit);
+
+  // Return the properties to client
+  res.body = properties.map(p =>
+    p.toObject({getters: true, virtuals: false})
+  );
 };
 
 export const routes = {
@@ -168,7 +189,8 @@ export const routes = {
           200: {
             description: "Token authenticated",
             body: Joi.object({
-              token: components.token.required()
+              token: components.token.required(),
+              id: components._id.required()
             })
           }
         }
@@ -203,8 +225,37 @@ export const routes = {
           200: {
             description: "Got user status",
             body: Joi.object({
-              email: components.email.required()
+              email: components.email.required(),
+              id: components._id.required()
             })
+          }
+        }
+      }
+    }
+  },
+  "listings/GET": {
+    handler: handlers.listings,
+    openapi: {
+      operationId: "userListings",
+      description: "Get the status of a user",
+      security: [{ JsonWebToken: [] }],
+      tags: ["user"],
+      schema: {
+        consumes: {
+          query: Joi.object({
+            userId: components._id.meta({ref: "user"}),
+            offset: components.offset,
+            limit: components.limit,
+          })
+        },
+        produces: {
+          200: {
+            body: Joi.array().items(
+                propertySchemas.property.keys({
+                    _id: components._id
+                        .meta({ref: "property"}).required()
+                })
+            )
           }
         }
       }
