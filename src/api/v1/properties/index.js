@@ -218,19 +218,19 @@ handlers.swapEmail = async function({ req, res }) {
   // Connect to DB
   const database = await DB();
 
-  const property = await database.models.property.findOne(
+  const propertyFrom = await database.models.property.findOne(
     {
-      _id: req.body.homeId
+      _id: req.body.homeFrom
     },
     { __v: 0 }
   );
   // If the property wasn't found inform the user
-  if (!property) {
+  if (!propertyFrom) {
     throw new HTTPError(400, "Property not found");
   }
 
 
-  const user = await database.models.user.findOne(
+  const me = await database.models.user.findOne(
     {
       _id: req.jwt.sub
     },
@@ -238,13 +238,24 @@ handlers.swapEmail = async function({ req, res }) {
   );
 
   // user was not found
-  if (!user) {
+  if (!me) {
     throw new HTTPError(400, "User not found");
+  }
+
+  const propertyFor = await database.models.property.findOne(
+    {
+      _id: req.body.homeFor
+    },
+    { __v: 0 }
+  );
+  // If the property wasn't found inform the user
+  if (!propertyFrom) {
+    throw new HTTPError(400, "Property not found");
   }
 
   const owner = await database.models.user.findOne(
     {
-      _id: property.owner
+      _id: propertyFor.owner
     },
     { __v: 0 }
   );
@@ -266,18 +277,20 @@ handlers.swapEmail = async function({ req, res }) {
   // Load account data
   const {data: accountInfo} = await EE.Account.Load();
 
+  const email = `<h2>Someone is interested!</h2>
+  <p>Trade Home: ${propertyFrom.address}<br />
+  Cash Offer: ${req.body.cash}<br />
+  Comments: ${req.body.comments}</p>`;
+
   // Email data
   const emailParams = {
     subject: "You got a swap offer for your home",
     to: owner.email,
     from: accountInfo.email,
-    replyTo: user.email,
-    body: `Someone is interested!
-    Trade Home: ${property.address}
-    Cash Offer: ${req.body.cashOffer}
-    Comments: ${req.body.comments}`,
+    replyTo: me.email,
+    body: email,
     fromName: "Tuffy Estates",
-    bodyType: "Plain"
+    bodyType: "Html"
   };
 
   // Send email
@@ -423,7 +436,8 @@ export const routes = {
         schema: {
           consumes: {
             body: Joi.object({
-              homeId: components._id.required(),
+              homeFrom: components._id.required(),
+              homeFor: components._id.required(),
               cash: components.cash,
               comments: components.comments
             })
