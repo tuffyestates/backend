@@ -1,14 +1,20 @@
-process.title = `tuffy_estates_backend`;
+#!/usr/bin/env node
 
-const PORT = process.env.CI_ENVIRONMENT_NAME === 'develop' ? 11637 : 11638;
-
-const http = require('http');
-
-// Create an HTTP server
-const srv = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  console.log(`got client`, req.headers);
-  res.end('okay');
-});
-
-srv.listen(PORT);
+// eslint-disable-next-line no-global-assign
+require = require("esm")(module);
+const server = require('./src');
+(async () => {
+    try {
+        await server.start();
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error("Error initializing server:\n", e);
+        try {
+            await server.stop();
+        } catch (e) {
+            // eslint-disable-next-line no-console
+            console.error("Unable to stop server safely:\n", e);
+            process.exit(1);
+        }
+    }
+})();

@@ -1,0 +1,35 @@
+version: "3.7"
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile-production
+    init: true
+    user: "node"
+    restart: on-failure
+    environment:
+        - NODE_ENV=production
+        - TE_SECRET=vUMY/+[D;:<XraqlZ/q\`lIe~\`;\"u2=^H_G/k,@xGY:K4(CMF,\'|TSFZAAFM-As)
+        - TE_STATIC_DIRECTORY=./temp
+        - TE_MONGODB_URL=mongodb://mongo:27017/tuffyestates
+        - TE_PORT=11638
+        - TE_TOKEN_MAX_AGE=604800000
+        - TE_SSL_CERT_PATH=./estates.localhost-key.pem
+        - TE_SSL_KEY_PATH=./estates.localhost-cert.pem
+    ports:
+      - "11638:11638"
+    depends_on:
+      - mongo
+    networks:
+      - database
+  mongo:
+    image: mvertes/alpine-mongo
+    volumes:
+      - ../dbdata:/data/db
+    networks:
+      - database
+    ports:
+      - "27020:27017"
+
+networks:
+  database:

@@ -1,24 +1,49 @@
 # Backend for Tuffy Estates
 
-*Only make changes to develop branch, master is stable*
+*Only make changes to the develop branch, master is stable*
 
 Master is a protected branch, you can only merge into it.
+
+## Live Builds (Demos)
+TODO
+
+## Dependencies
+* Docker Engine 18.06.0+ | Installers: [Mac](https://download.docker.com/mac/stable/Docker.dmg) [Win](https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe)
+* [Docker Compose](https://github.com/docker/compose/releases/) 1.23.2+
 
 ## Developing
 
 Install Docker Hub on your computer: https://www.docker.com/get-started
 
+The following will download the source code.
 ```
-git clone git@github.com:tuffyestates/backend.git -b develop
-cd backend
-./run.sh
+$ git clone git@github.com:tuffyestates/backend.git -b develop    # Download the source
+$ cd backend    # Change to the newly downloaded backend directory
 ```
-You will now be able to access the server on [localhost:11638](http://localhost:11638).
 
-See https://gitlab.com/tuffyestates/backend/wikis/Development for more information on working on the live environments.
+Next you will need to start the docker containers.
 
-## Launching staging environment
+##### Unix
 ```
-git push
+$ ./run.sh    # Start the docker containers
 ```
-Then file a [new merge request](https://gitlab.com/tuffyestates/backend/merge_requests/new) from the `develop` branch into the `master` branch. Once the branch is merged a [CI pipeline](https://gitlab.com/tuffyestates/backend/pipelines) will be started. Once it completes the deployment stage the server will be accessable with the latest build at [direct.sparling.us:11638](http://direct.sparling.us:11638). You can check the status of the environment at [environments](https://gitlab.com/tuffyestates/backend/environments).
+
+##### Windows
+```
+$ run.bat    # Start the docker containers
+```
+
+You will now be able to access the server on [https://localhost:11638](https://localhost:11638).
+
+## Viewing the database
+
+Download [MongoDB Compass](https://www.mongodb.com/download-center/compass). Upon opening MongoDB Compass, enter `27020` for the port, leave all other settings at their default and hit connect. You should see a tuffyestates database.
+
+#### References
+https://medium.com/yalantis-mobile/what-technology-stack-do-zillow-redfin-and-realtor-com-use-for-property-listings-b6b1ba695618
+https://yalantis.com/blog/mobile-real-estate-app-development-usa-zillow-trulia-apps-technology/
+https://patents.google.com/?assignee=Zillow&oq=assignee:Zillow
+
+#### Geocoding Data Sources
+OSM - https://wiki.openstreetmap.org/wiki/Osmosis
+http://download.geonames.org/export/dump/
